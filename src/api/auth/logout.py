@@ -1,8 +1,6 @@
 from fastapi import APIRouter , Request , Response
 
-
 logout_router = APIRouter()
-
 
 @logout_router.delete("/logout")
 async def logout(request: Request , response :Response):

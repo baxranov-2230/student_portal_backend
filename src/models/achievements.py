@@ -5,7 +5,6 @@ from src.core.base import Base
 
 class Achievement(Base):
     __tablename__ = "achievements"
-    
     id = Column(Integer , primary_key=True)
     user_id = Column(Integer , ForeignKey("users.id"))
     type = Column(String(50) , nullable=False)
