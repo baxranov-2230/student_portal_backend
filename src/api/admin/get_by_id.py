@@ -1,8 +1,10 @@
-from fastapi import APIRouter , Depends , HTTPException , status
+from fastapi import APIRouter , Depends , HTTPException , status , Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.base import get_db
 from sqlalchemy.future import select
 from src.models.user import User
+from src.models.user_gpa import UserGpa
+
 
 
 get_router = APIRouter()
@@ -26,12 +28,23 @@ async def get_by_id(
 
 @get_router.get("/get-all")
 async def get_all(
+    min_gpa: float = Query(None),
+    limit: int = Query(25 , ge=1),
+    offset: int = Query(0 , ge=0),
     db: AsyncSession = Depends(get_db)
 ):
-    stmt = select(User).limit(25)
-    result = await db.execute(stmt)
-    users = result.scalars().all()
+    stmt = select(User).join(UserGpa , User.id == UserGpa.user_id)
 
-    return users
+    if min_gpa is not None:
+        stmt = stmt.where(UserGpa.gpa >= min_gpa)
+
+    stmt = stmt.order_by(UserGpa.gpa.desc())
+
+    stmt = stmt.offset(offset).limit(limit=limit)
+
+    result = await db.execute(stmt)
+    user = result.scalars().all()
+
+    return user
 
 
