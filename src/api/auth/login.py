@@ -17,8 +17,7 @@ async def login(
     credentials: OAuth2PasswordRequestForm = Depends(),
     db:AsyncSession = Depends(get_db)
 ):
-    token = await authenticate_user(credentials=credentials)  
-
+    token = await authenticate_user(credentials=credentials)
     user_data = await fetch_user_data(token=token)
     user_data = map_user_data(user_data)
     user_data = await save_user_data_to_db(db=db , user_data=user_data)
@@ -49,6 +48,5 @@ async def login(
     return {
             "access_token": access_token,
             "refresh_token": refresh_token,
-            "hemis_token": token,
             "token_type": "bearer"
         }
