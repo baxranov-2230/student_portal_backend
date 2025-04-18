@@ -89,3 +89,20 @@ async def get_current_user_from_token(
     
     token_data = await decode_token(db, jwt_token)
     return token_data["user"]
+
+
+async def get_user_from_token(db: AsyncSession , token: str):
+    payload = jwt.decode(token , settings.SECRET_KEY , algorithms=[settings.ALGORITHM])
+    username = payload.get("sub")
+    if not username:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Username not found"
+        )
+    user = await get_user(db=db , username=username)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found"
+        )
+    return user

@@ -4,7 +4,8 @@ from src.core.base import get_db
 from src.schemas.research import ResearchBase , ResearchUpdate 
 from datetime import date
 from src.utils.main_crud import MainCrud , save_file 
-from src.utils.jwt_utils import decode_token
+from src.utils.jwt_utils import get_user_from_token
+from src.utils.auth import oauth2_scheme
 from src.models.research import Research
 
 
@@ -16,15 +17,15 @@ main_crud = MainCrud(model=Research)
 
 @research_router.post("/create")
 async def create(
-    request: Request,
     form: str,
     pub_date: date,
     title: str,
     file: UploadFile = File(...),
+    token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db)
 ):
-    response = request.cookies.get("jwt_token")
-    user_data = await decode_token(db=db , token=response)
+
+    user_data = await get_user_from_token(db=db , token=token)
     saved_file_path = await save_file(file=file)
     research_data = ResearchBase(
         user_id=user_data.id,
@@ -34,26 +35,26 @@ async def create(
         file_path=saved_file_path,
     )
 
-    return await main_crud.create(db=db , obj_in=research_data)
+    return await main_crud.create(db=db  ,obj_in=research_data)
     
 
 @research_router.get('/get/{id}')
 async def get_by_id(
     id: int,
-    request: Request,
+    token: str = Depends(oauth2_scheme),
     db:AsyncSession = Depends(get_db)
 ):
-    response = request.cookies.get("jwt_token")
-    user_data = await decode_token(db=db , token=response)
+    
+    user_data = await get_user_from_token(db=db , token=token)
     return await main_crud.get(db=db , id=id , user_id=user_data.id)
 
 @research_router.get("/get-all")
 async def get_all(
-    request: Request,
+    token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db)
 ):
-    response = request.cookies.get("jwt_token")
-    user_data = await decode_token(db=db , token=response)
+    
+    user_data = await get_user_from_token(db=db , token=token)
     return await main_crud.get_all(db=db , user_id=user_data.id)
 
 @research_router.put("/update/{id}")
@@ -63,6 +64,7 @@ async def update(
     pub_date: date | None = None,
     title: str | None = None,
     file: UploadFile = File(None),
+    token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db)
 ):
     if file:
@@ -80,15 +82,16 @@ async def update(
             pub_date=pub_date,
             title=title,
         )
-    return await main_crud.update(db=db , id=id , obj_in=research_data)
+    user_data = await get_user_from_token(db=db , token=token)
+    return await main_crud.update(db=db , id=id , user_id=user_data.id , obj_in=research_data)
 
 @research_router.delete("/delete/{id}")
 async def delete(
     id: int,
-    request: Request,
+    token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db)
 ):
-    response = request.cookies.get("jwt_token")
-    user_data = await decode_token(db=db , token=response)
+
+    user_data = await get_user_from_token(db=db , token=token)
     await main_crud.delete(db=db , id=id , user_id=user_data.id)
     return {"message": "Delete successfully"}

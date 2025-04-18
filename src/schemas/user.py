@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class LoginRequest(BaseModel):
-    login: int
+    username: int
     password: str
 
 

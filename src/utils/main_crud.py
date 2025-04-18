@@ -40,9 +40,9 @@ class MainCrud(Generic[ModelType , SchemaType]):
             await db.rollback()
             raise await main_exeption(e)
         
-    async def update(self , db:AsyncSession , id: int , obj_in: SchemaType)-> ModelType:
+    async def update(self , db:AsyncSession , id: int ,user_id : int, obj_in: SchemaType)-> ModelType:
         try:
-            db_obj = await self.get(db=db , id=id)
+            db_obj = await self.get(db=db , id=id , user_id=user_id)
             update_data = obj_in.model_dump(exclude_unset = True)
             for field , value in update_data.items():
                 if value in {None , "" , "string"}:
