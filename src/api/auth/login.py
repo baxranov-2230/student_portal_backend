@@ -23,8 +23,8 @@ async def login(
     response.set_cookie(
         key="access_token",
         value=token,
-        httponly=True,
-        secure=True,
+        # httponly=True,
+        # secure=True,
         max_age=86400,
     )
 
@@ -53,16 +53,16 @@ async def login(
     response.set_cookie(
         key="jwt_token",
         value=jwt_token,
-        httponly=True,
-        secure=True,
+        # httponly=True,
+        # secure=True,
         max_age=int(access_token_expire.total_seconds())
     )
 
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
-        httponly=True,
-        secure=True,
+        # httponly=True,
+        # secure=True,
         max_age=int(refresh_token_expire.total_seconds())
     )
 
