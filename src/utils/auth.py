@@ -4,16 +4,21 @@ import httpx
 from src.core.config import settings
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.security import OAuth2PasswordBearer
 from .main_crud import *
 
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+
+
 async def authenticate_user(credentials: LoginRequest)-> str:
-    if not credentials.login or not credentials.password:
+    if not credentials.username or not credentials.password:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Login and password are required"
         )
     
-    payload = {"login": credentials.login , "password": credentials.password}
+    payload = {"login": int(credentials.username) , "password": credentials.password}
     headers = {"Content-Type": "application/json",}
     async with httpx.AsyncClient() as client:
         api_response = await client.post(url=settings.HEMIS_LOGIN_URL , json=payload , headers=headers)
@@ -42,6 +47,14 @@ async def fetch_user_gpa(token: str) -> dict:
              user_resposne = await client.get(url=settings.HEMIS_USER_GPA , headers=headers)
              user_resposne.raise_for_status()
              return user_resposne.json()
+        
+async def fetch_subject(semester: int):
+    url = f"{settings.HEMIS_USER_SUBJECT}?semester={semester}"
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url=url )
+        response.raise_for_status()
+        return response.json()
         
 def map_user_data(api_data: dict) -> dict:
     user_data = {

@@ -10,5 +10,6 @@ async def logout(request: Request , response :Response):
         return {"message": "No active session"}
     
     response.delete_cookie(key="access_token")
+    response.delete_cookie(key="jwt_token")
 
     return {"message": "Successfully logged out."}
