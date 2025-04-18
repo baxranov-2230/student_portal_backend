@@ -10,25 +10,10 @@ from src.utils.main_crud import get_user
 from fastapi.responses import JSONResponse
 
 
-
-
-
-async def access_token_create(data: dict, expire_delta: timedelta) -> str:
+async def create_token(data: dict, expire_delta: timedelta) -> str:
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expire_delta
-    to_encode.update({"exp": expire, "iat": datetime.now(timezone.utc)})
-    encoded_jwt = await asyncio.to_thread(
-        jwt.encode,
-        to_encode,
-        settings.SECRET_KEY,
-        algorithm=settings.ALGORITHM,
-    )
-    return encoded_jwt
-
-async def create_refresh_token(data: dict, expire_delta: timedelta) -> str:
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + expire_delta
-    to_encode.update({"exp": expire, "iat": datetime.now(timezone.utc)})
+    to_encode.update({"exp": expire})
     return await asyncio.to_thread(
         jwt.encode,
         to_encode,
@@ -36,59 +21,26 @@ async def create_refresh_token(data: dict, expire_delta: timedelta) -> str:
         algorithm=settings.ALGORITHM,
     )
 
-async def decode_token(db: AsyncSession, token: str):
-    try:
-        payload = await asyncio.to_thread(
-            jwt.decode,
-            token,
-            settings.SECRET_KEY,
-            algorithms=[settings.ALGORITHM],
-            options={"verify_exp": True}
-        )
-        
-        username = payload.get("sub")
-        if not username:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token: username not found"
-            )
+async def refresh_access_token(refresh_token: str):
+    payload = jwt.decode(
+        refresh_token,
+        settings.REFRESH_SECRET_KEY,
+        algorithms= settings.ALGORITHM
+    )
 
-        user = await get_user(db=db, username=username)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found"
-            )
-        
-        return {
-            "user": user,
-            "expiration_time": datetime.fromtimestamp(payload.get("exp"), tz=timezone.utc)
-        }
-    
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired"
-        )
-    except jwt.InvalidTokenError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid token: {str(e)}"
-        )
+    access_token_expire = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
-async def get_current_user_from_token(
-    request: Request,
-    db: AsyncSession = Depends(get_db)
-):
-    jwt_token = request.cookies.get("access_token")
-    if not jwt_token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication token missing"
-        )
-    
-    token_data = await decode_token(db, jwt_token)
-    return token_data["user"]
+    new_access_token = await create_token(
+        data={
+            "sub": payload.get("sub")
+        },
+        expire_delta=access_token_expire
+    )
+
+    return {
+            "access_token": new_access_token,
+            "refresh_token": refresh_token
+    }
 
 
 async def get_user_from_token(db: AsyncSession , token: str):
