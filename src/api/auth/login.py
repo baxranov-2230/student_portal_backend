@@ -3,6 +3,7 @@ from src.utils.auth import *
 from datetime import *
 from fastapi.security import OAuth2PasswordRequestForm
 from src.utils.jwt_utils import  create_token
+
 from src.core.base import get_db
 
 
@@ -43,6 +44,9 @@ async def login(
     user_gpa = await fetch_user_gpa(token=token)
     user_gpa = map_user_gpa(user_gpa)
     await save_user_gpa_to_db(db=db , user_id=user_data.id , user_gpa=user_gpa)
+
+
+    await process_user_subjects(db=db , token=token , user_data=user_data)
 
 
 

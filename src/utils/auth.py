@@ -5,7 +5,9 @@ from src.core.config import settings
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer
+from src.models.user_subject import UserSubject
 from .main_crud import *
+import json
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
@@ -48,11 +50,14 @@ async def fetch_user_gpa(token: str) -> dict:
              user_resposne.raise_for_status()
              return user_resposne.json()
         
-async def fetch_subject(semester: int):
+async def fetch_subject(semester: int , token: str):
     url = f"{settings.HEMIS_USER_SUBJECT}?semester={semester}"
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 
     async with httpx.AsyncClient() as client:
-        response = await client.get(url=url )
+        response = await client.get(
+            url=url, 
+            headers=headers)
         response.raise_for_status()
         return response.json()
         
@@ -132,6 +137,32 @@ def map_user_gpa(api_data)-> dict:
         )
     return mapped_data
 
+def map_subject_grades(api_data: dict) -> list:
+    data = api_data.get("data", [])
+    semester_mapping = {}
+    for item in data:
+        grades = item.get("grades", [])
+        if grades:
+            semester = grades[0].get("semester", {})
+            semester_code = semester.get("code")
+            semester_name = semester.get("name")
+            if semester_code and semester_name:
+                semester_mapping[semester_code] = semester_name
+    
+    result = []
+    for item in data:
+        subject_name = item.get("curriculumSubject", {}).get("subject", {}).get("name")
+        grade = item.get("overallScore", {}).get("grade")
+        if subject_name is None or grade is None:
+            continue  # Skip invalid subjects
+        subject_data = {
+            "id": item.get("id"),
+            "subject_name": subject_name,
+            "grade": grade,
+            "semester_name": semester_mapping.get(item.get("_semester"), "Unknown")
+        }
+        result.append(subject_data)
+    return result
 
 async def save_user_data_to_db(db: AsyncSession , user_data: dict):
     result = await get_user(db=db , username=user_data["student_id_number"])
@@ -155,15 +186,27 @@ async def save_user_gpa_to_db(db: AsyncSession , user_id: int, user_gpa: dict):
     await db.refresh(new_user)
     return new_user
 
+async def save_user_subjects_bulk(db: AsyncSession, user_id: int, user_subjects: list):
+    existing = await db.execute(
+        select(UserSubject).filter_by(user_id=user_id)
+    )
+    existing_subjects = {(r.subject_name, r.semester_name) for r in existing.scalars().all()}
+    new_subjects = [
+        UserSubject(user_id=user_id, **subject)
+        for subject in user_subjects
+        if (subject["subject_name"], subject["semester_name"]) not in existing_subjects
+    ]
+    if new_subjects:
+        db.add_all(new_subjects)
+        await db.commit()
 
-async def fetch_subject(semester: int):
-    url = f"{settings.HEMIS_USER_SUBJECT}?semester={semester}"
+    return new_subjects
 
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url)
-        response.raise_for_status()
-        return response.json()
-    
-
-async def mapped_subject(api_data: dict) -> dict:
-    pass
+async def process_user_subjects(db: AsyncSession, token: str, user_data):
+    for num in range(10, 18):
+        try:
+            user_subjects = await fetch_subject(token=token, semester=num)
+            user_subjects = map_subject_grades(api_data=user_subjects)
+            await save_user_subjects_bulk(db=db, user_id=user_data.id, user_subjects=user_subjects)
+        except Exception:
+            continue
