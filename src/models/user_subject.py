@@ -9,7 +9,7 @@ class UserSubject(Base):
     user_id = Column(Integer ,ForeignKey("users.id"), nullable=False)
     subject_name = Column(String , nullable=False)
     grade = Column(Integer , nullable=False)
-    semester_name = Column(String, nullable=False)
+    semester_code = Column(Integer, nullable=False)
 
 
     user = relationship("User" , back_populates="subject")

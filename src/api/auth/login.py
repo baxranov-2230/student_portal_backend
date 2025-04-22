@@ -45,8 +45,22 @@ async def login(
     user_gpa = map_user_gpa(user_gpa)
     await save_user_gpa_to_db(db=db , user_id=user_data.id , user_gpa=user_gpa)
 
+    
+    semester_number =  await check_semester(semestr=user_data.semester)
 
-    await process_user_subjects(db=db , token=token , user_data=user_data)
+
+    subject_data = []
+
+    for i in range(11 , semester_number+1):
+        user_subjects = await fetch_subject(token=token, semester=i)
+        user_subjects = map_subject_grades(api_data=user_subjects)
+        subject_data.extend(user_subjects)
+
+
+    await save_user_subject_to_db(db=db , user_id=user_data.id , user_subjects=subject_data)
+
+
+    
 
 
 

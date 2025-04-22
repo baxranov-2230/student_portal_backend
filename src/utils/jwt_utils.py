@@ -1,13 +1,10 @@
-from fastapi import APIRouter, Request, Response, Depends, HTTPException, status
-from src.core.base import get_db
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
 from datetime import datetime, timedelta, timezone
-import jwt
-import asyncio
 from src.core.config import settings
 from src.utils.main_crud import get_user
-from fastapi.responses import JSONResponse
+import jwt
+import asyncio
 
 
 async def create_token(data: dict, expire_delta: timedelta) -> str:
