@@ -38,15 +38,15 @@ async def create(
     return await main_crud.create(db=db  ,obj_in=research_data)
     
 
-@research_router.get('/get/{id}')
+@research_router.get('/get/{research_id}')
 async def get_by_id(
-    id: int,
+    research_id: int,
     token: str = Depends(oauth2_scheme),
     db:AsyncSession = Depends(get_db)
 ):
     
     user_data = await get_user_from_token(db=db , token=token)
-    return await main_crud.get(db=db , id=id , user_id=user_data.id)
+    return await main_crud.get(db=db , id=research_id , user_id=user_data.id)
 
 @research_router.get("/get-all")
 async def get_all(
@@ -57,9 +57,9 @@ async def get_all(
     user_data = await get_user_from_token(db=db , token=token)
     return await main_crud.get_all(db=db , user_id=user_data.id)
 
-@research_router.put("/update/{id}")
+@research_router.put("/update/{research_id}")
 async def update(
-    id: int,
+    research_id: int,
     form: str | None = None,
     pub_date: date | None = None,
     title: str | None = None,
@@ -83,15 +83,15 @@ async def update(
             title=title,
         )
     user_data = await get_user_from_token(db=db , token=token)
-    return await main_crud.update(db=db , id=id , user_id=user_data.id , obj_in=research_data)
+    return await main_crud.update(db=db , id=research_id , user_id=user_data.id , obj_in=research_data)
 
-@research_router.delete("/delete/{id}")
+@research_router.delete("/delete/{research_id}")
 async def delete(
-    id: int,
+    research_id: int,
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db)
 ):
 
     user_data = await get_user_from_token(db=db , token=token)
-    await main_crud.delete(db=db , id=id , user_id=user_data.id)
+    await main_crud.delete(db=db , id=research_id , user_id=user_data.id)
     return {"message": "Delete successfully"}

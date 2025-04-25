@@ -16,7 +16,7 @@ async def get_info(
     try:
         payload = jwt.decode(
             token,
-            settings.SECRET_KEY,
+            settings.ACCESS_SECRET_KEY,
             algorithms=[settings.ALGORITHM],
             options={"verify_exp": True}
         )

@@ -43,14 +43,14 @@ async def create(
     return await main_crud.create(db=db , obj_in=cert_data)
 
 
-@cert_router.get('/get/{id}')
+@cert_router.get('/get/{cert_id}')
 async def get_by_id(
-    id: int,
+    cert_id: int,
     token: str = Depends(oauth2_scheme),
     db:AsyncSession = Depends(get_db)
 ):
     user_data = await get_user_from_token(db=db , token=token)
-    return await main_crud.get(db=db , id=id , user_id=user_data.id)
+    return await main_crud.get(db=db , id=cert_id , user_id=user_data.id)
 
 @cert_router.get("/get-all")
 async def get_all(
@@ -60,9 +60,9 @@ async def get_all(
     user_data = await get_user_from_token(db=db , token=token)
     return await main_crud.get_all(db=db , user_id=user_data.id)
 
-@cert_router.put("/update/{id}")
+@cert_router.put("/update/{cert_id}")
 async def update(
-    id: int,
+    cert_id: int,
     language: str  | None = None,
     certificate_type: str | None = None,
     level: str | None = None,
@@ -92,17 +92,17 @@ async def update(
             date_of_issue=date_of_issue,
         )
     user_data = await get_user_from_token(db=db , token=token)
-    return await main_crud.update(db=db , id=id , user_id=user_data.id ,obj_in=cert_data)
+    return await main_crud.update(db=db , id=cert_id , user_id=user_data.id ,obj_in=cert_data)
 
-@cert_router.delete("/delete/{id}")
+@cert_router.delete("/delete/{cert_id}")
 async def delete(
-    id: int,
+    cert_id: int,
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db)
 ):
     
     user_data = await get_user_from_token(db=db , token=token)
-    await main_crud.delete(db=db , id=id , user_id=user_data.id)
+    await main_crud.delete(db=db , id=cert_id , user_id=user_data.id)
 
     return {"message": "Delete successfully"}
 

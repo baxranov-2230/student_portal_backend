@@ -5,7 +5,10 @@ from src.core.config import settings
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer
+from src.models.user_subject import UserSubject
 from .main_crud import *
+from typing import Dict , Any , List
+
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
@@ -48,11 +51,14 @@ async def fetch_user_gpa(token: str) -> dict:
              user_resposne.raise_for_status()
              return user_resposne.json()
         
-async def fetch_subject(semester: int):
+async def fetch_subject(semester: int , token: str):
     url = f"{settings.HEMIS_USER_SUBJECT}?semester={semester}"
-
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     async with httpx.AsyncClient() as client:
-        response = await client.get(url=url )
+        response = await client.get(
+            url=url, 
+            headers=headers
+            )
         response.raise_for_status()
         return response.json()
         
@@ -132,6 +138,24 @@ def map_user_gpa(api_data)-> dict:
         )
     return mapped_data
 
+def map_subject_grades(api_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    data = api_data.get("data", [])
+    result = []
+    for item in data:
+        subject_name = item.get("curriculumSubject", {}).get("subject", {}).get("name")
+        grade = item.get("overallScore", {}).get("grade")
+        semester_code = item.get("_semester", 0)
+        
+        if subject_name is None or grade is None or semester_code == 0:
+            continue
+            
+        subject_data = {
+            "subject_name": subject_name,
+            "grade": grade,
+            "semester_code": semester_code
+        }
+        result.append(subject_data)
+    return result
 
 async def save_user_data_to_db(db: AsyncSession , user_data: dict):
     result = await get_user(db=db , username=user_data["student_id_number"])
@@ -156,14 +180,73 @@ async def save_user_gpa_to_db(db: AsyncSession , user_id: int, user_gpa: dict):
     return new_user
 
 
-async def fetch_subject(semester: int):
-    url = f"{settings.HEMIS_USER_SUBJECT}?semester={semester}"
+async def save_user_subject_to_db(db: AsyncSession, user_subjects: List[dict], user_id: int):
+    try:
+        existing_subjects = await db.execute(
+            select(UserSubject).where(UserSubject.user_id == user_id)
+        )
+        existing_subjects = existing_subjects.scalars().all()
 
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url)
-        response.raise_for_status()
-        return response.json()
-    
 
-async def mapped_subject(api_data: dict) -> dict:
-    pass
+        existing_subject_keys = {
+            (subject.subject_name, subject.semester_code) for subject in existing_subjects
+        }
+
+        db_items = []
+        for item in user_subjects:
+            subject_name = item["subject_name"]
+            subject_grade = item["grade"]
+            semester_code = int(item["semester_code"])
+
+            if subject_grade == 0:
+                continue
+
+            if (subject_name, semester_code) not in existing_subject_keys:
+                db_items.append(
+                    UserSubject(
+                        user_id=user_id,
+                        subject_name=subject_name,
+                        grade=item["grade"],
+                        semester_code=semester_code
+                    )
+                )
+            else:
+                return existing_subjects
+
+        if db_items:
+            db.add_all(db_items)
+            await db.commit()
+
+            for item in db_items:
+                await db.refresh(item)
+
+
+    except ValueError as e:
+        await db.rollback()
+        raise Exception(f"Invalid semester_code value: {str(e)}")
+
+    except Exception as e:
+        await db.rollback()
+        raise Exception(f"Failed to save subjects: {str(e)}")
+
+
+
+async def check_semester(semestr: str):
+    match semestr:
+        case "1-semestr":
+            return 11
+        case "2-semestr":
+            return 12
+        case "3-semestr":
+            return 13
+        case "4-semestr":
+            return 14
+        case "5-semestr":
+            return 15
+        case "6-semestr":
+            return 16
+        case "7-semestr":
+            return 17
+        case "8-semestr":
+            return 18
+        

@@ -37,4 +37,5 @@ class User(Base):
     cert = relationship("Cert" , back_populates="user")
     achievement = relationship("Achievement" , back_populates="user")
     research = relationship("Research" , back_populates="user")
+    subject = relationship("UserSubject" , back_populates="user")
     gpa = relationship("UserGpa" , back_populates="user" , uselist=False)

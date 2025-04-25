@@ -10,7 +10,7 @@ from src.models.user_gpa import UserGpa
 get_router = APIRouter()
 
 
-@get_router.get("/get-by-id")
+@get_router.get("/get-by-id/{user_id}")
 async def get_by_id(
     user_id: int,
     db: AsyncSession = Depends(get_db)

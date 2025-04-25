@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
-from src.models.user import User  # Replace with your model
-from src.core.base import get_db  # Replace with your DB dependency
+from src.models.user import User  
+from src.core.base import get_db  
 
 search_router = APIRouter()
 
