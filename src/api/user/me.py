@@ -6,10 +6,7 @@ from src.utils.main_crud import get_user
 from src.utils.auth import oauth2_scheme
 import jwt
 
-
 me_router = APIRouter()
-
-
 
 @me_router.get("/me")
 async def get_info(
