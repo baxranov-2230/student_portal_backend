@@ -37,14 +37,14 @@ async def create(
     return await main_crud.create(db=db , obj_in=achievement_data)
 
 
-@achievement_router.get('/get/{id}')
+@achievement_router.get('/get/{achievement_id}')
 async def get_by_id(
-    id: int,
+    achievement_id: int,
     token : str = Depends(oauth2_scheme),
     db:AsyncSession = Depends(get_db)
 ):
     user_data = await get_user_from_token(db=db , token=token)
-    return await main_crud.get(db=db , id=id , user_id=user_data.id)
+    return await main_crud.get(db=db , id=achievement_id , user_id=user_data.id)
 
 
 @achievement_router.get("/get-all")
@@ -55,9 +55,9 @@ async def get_all(
     user_data = await get_user_from_token(db=db , token=token)
     return await main_crud.get_all(db=db , user_id=user_data.id)
 
-@achievement_router.put("/update/{id}")
+@achievement_router.put("/update/{achievement_id}")
 async def update(
-    id: int,
+    achievement_id: int,
     type: str| None = None,
     award_date: date | None = None,
     title: str | None = None,
@@ -81,14 +81,14 @@ async def update(
                 award_date=award_date,
             )
     user_data = await get_user_from_token(db=db , token=token)
-    return await main_crud.update(db=db , id=id ,user_id=user_data.id , obj_in=update_data)
+    return await main_crud.update(db=db , id=achievement_id ,user_id=user_data.id , obj_in=update_data)
 
-@achievement_router.delete("/delete/{id}")
+@achievement_router.delete("/delete/{achievement_id}")
 async def delete(
-    id: int,
+    achievement_id: int,
     token : str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db)
 ):
     user_data = await get_user_from_token(db=db , token=token)
-    await main_crud.delete(db=db , id=id , user_id=user_data.id)
+    await main_crud.delete(db=db , id=achievement_id , user_id=user_data.id)
     return {"message": "Delete successfuly"}
