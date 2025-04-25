@@ -7,14 +7,25 @@ import jwt
 import asyncio
 
 
-async def create_token(data: dict, expire_delta: timedelta) -> str:
+async def create_access_token(data: dict, expire_delta: timedelta) -> str:
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expire_delta
     to_encode.update({"exp": expire})
     return await asyncio.to_thread(
         jwt.encode,
         to_encode,
-        settings.SECRET_KEY,
+        settings.ACCESS_SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
+
+async def create_refresh_token(data: dict , expire_delta: timedelta)-> str:
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + expire_delta
+    to_encode.update({"exp": expire})
+    return await asyncio.to_thread(
+        jwt.encode,
+        to_encode,
+        settings.REFRESH_SECRET_KEY,
         algorithm=settings.ALGORITHM,
     )
 
@@ -27,7 +38,7 @@ async def refresh_access_token(refresh_token: str):
 
     access_token_expire = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    new_access_token = await create_token(
+    new_access_token = await create_access_token(
         data={
             "sub": payload.get("sub")
         },
@@ -41,7 +52,7 @@ async def refresh_access_token(refresh_token: str):
 
 
 async def get_user_from_token(db: AsyncSession , token: str):
-    payload = jwt.decode(token , settings.SECRET_KEY , algorithms=[settings.ALGORITHM])
+    payload = jwt.decode(token , settings.ACCESS_SECRET_KEY , algorithms=[settings.ALGORITHM])
     username = payload.get("sub")
     if not username:
         raise HTTPException(

@@ -2,7 +2,7 @@ from fastapi import APIRouter  , Depends
 from src.utils.auth import *
 from datetime import *
 from fastapi.security import OAuth2PasswordRequestForm
-from src.utils.jwt_utils import  create_token
+from src.utils.jwt_utils import  create_access_token , create_refresh_token
 
 from src.core.base import get_db
 
@@ -25,7 +25,7 @@ async def login(
     user_data = await save_user_data_to_db(db=db , user_data=user_data)
     access_token_expire = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    access_token = await create_token(
+    access_token = await create_access_token(
         {
             "sub": user_data.student_id_number
         },
@@ -34,7 +34,7 @@ async def login(
 
     refresh_token_expire = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
-    refresh_token = await create_token(
+    refresh_token = await create_refresh_token(
         {
             "sub": user_data.student_id_number
         },
