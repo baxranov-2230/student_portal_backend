@@ -31,6 +31,7 @@ async def get_by_id(
     stmt = select(UserSubject).where(UserSubject.user_id == user.id)
     result = await db.execute(stmt)
     user_subjects = result.scalars().all()
+
     return {
             "id": user.id,
             "studentStatus": user.studentStatus,
@@ -65,28 +66,22 @@ async def get_by_id(
 @get_router.get("/get-all")
 async def get_all(
     min_gpa: float = Query(None),
-    limit: int = Query(25 , ge=1),
-    offset: int = Query(0 , ge=0),
+    limit: int = Query(25, ge=1),
+    offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db)
 ):
-    stmt = select(User).join(UserGpa , User.id == UserGpa.user_id)
-
+    stmt = select(User, UserGpa.gpa).join(UserGpa, User.id == UserGpa.user_id)
     if min_gpa is not None:
         stmt = stmt.where(UserGpa.gpa >= min_gpa)
-
-    stmt = stmt.order_by(UserGpa.gpa.desc())
-
-    stmt = stmt.offset(offset).limit(limit=limit)
-
+    stmt = stmt.order_by(UserGpa.gpa.desc()).offset(offset).limit(limit)
     result = await db.execute(stmt)
-    users = result.scalars().all()
-
+    rows = result.all()
     return [
         {
             "id": user.id,
             "full_name": user.full_name,
             "group": user.group,
-            "gpa": user.gpa,
+            "gpa": gpa,
         }
-        for user in users
+        for user, gpa in rows
     ]
