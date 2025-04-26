@@ -10,24 +10,7 @@ import uvicorn
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    # allow_origins=["*"],  # Test uchun; keyin frontend URLni qo‘shing
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    allow_origins=[
-        "http://127.0.0.0.1:5500",
-        "http://localhost:5173"
-        # "http://localhost:5174",     
-        # "http://localhost:5177",
-        # "https://new.nsumt.uz",
-    
-    ],  # Разрешаем доступ с вашего фронтенда
-    # allow_credentials=True,
-    # allow_methods=["*"],  # Разрешаем все HTTP методы
-    # allow_headers=["*"],  # Разрешаем все заголовки
-)
+
 
 @app.exception_handler(ExpiredSignatureError)
 async def expired_signature_handler(request: Request , exc : ExpiredSignatureError):
@@ -51,6 +34,14 @@ app.include_router(api_router)
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", reload=True)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_origins=["http://localhost:5174"],
+)
 
 
