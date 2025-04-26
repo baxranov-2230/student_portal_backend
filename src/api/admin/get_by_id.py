@@ -4,6 +4,8 @@ from src.core.base import get_db
 from sqlalchemy.future import select
 from src.models.user import User
 from src.models.user_gpa import UserGpa
+from src.models.user_subject import UserSubject
+from sqlalchemy import select
 
 
 
@@ -22,8 +24,42 @@ async def get_by_id(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
+
+
         )
-    return user
+    
+    stmt = select(UserSubject).where(UserSubject.user_id == user.id)
+    result = await db.execute(stmt)
+    user_subjects = result.scalars().all()
+    return {
+            "id": user.id,
+            "studentStatus": user.studentStatus,
+            "semester": user.semester,
+            "educationForm": user.educationForm,
+            "address": user.address,
+            "educationType": user.educationType ,
+            "last_name": user.last_name,
+            "phone": user.phone,
+            "paymentForm": user.paymentForm,
+            "first_name": user.first_name,
+            "group": user.group,
+            "third_name": user.third_name,
+            "student_id_number": user.student_id_number,
+            "gender": user.gender,
+            "educationLang": user.educationLang,
+            "full_name": user.full_name,
+            "image_path": user.image_path,
+            "university": user.university,
+            "faculty": user.faculty,
+            "birth_date": user.birth_date,
+            "specialty": user.specialty,
+            "level": user.level,
+            "subjects": [{
+                "subject":  user_subject.subject_name,
+                "gade": user_subject.grade,
+                "subjec-code": user_subject.semester_code
+            } for user_subject in user_subjects]
+            }
 
 
 @get_router.get("/get-all")
@@ -43,8 +79,14 @@ async def get_all(
     stmt = stmt.offset(offset).limit(limit=limit)
 
     result = await db.execute(stmt)
-    user = result.scalars().all()
+    users = result.scalars().all()
 
-    return user
-
-
+    return [
+        {
+            "id": user.id,
+            "full_name": user.full_name,
+            "group": user.group,
+            "gpa": user.gpa,
+        }
+        for user in users
+    ]
