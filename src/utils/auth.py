@@ -14,21 +14,35 @@ from typing import Dict , Any , List
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
-async def authenticate_user(credentials: LoginRequest)-> str:
-    if not credentials.username or not credentials.password:
+async def authenticate_user(credentials: LoginRequest) -> str:
+
+    username = credentials.username.strip()
+    password = credentials.password.strip()
+    
+    
+    if not username or not password:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Login and password are required"
         )
     
-    payload = {"login": int(credentials.username) , "password": credentials.password}
-    headers = {"Content-Type": "application/json",}
+    
+    try:
+        login = int(username)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Login must be a valid integer"
+        )
+    
+    payload = {"login": login, "password": password}
+    headers = {"Content-Type": "application/json"}
     async with httpx.AsyncClient() as client:
-        api_response = await client.post(url=settings.HEMIS_LOGIN_URL , json=payload , headers=headers)
+        api_response = await client.post(url=settings.HEMIS_LOGIN_URL, json=payload, headers=headers)
         api_response.raise_for_status()
 
         response_data = api_response.json()
-        token = response_data.get("data" , {}).get("token")
+        token = response_data.get("data", {}).get("token")
         if not token:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
