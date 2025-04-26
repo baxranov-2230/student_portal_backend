@@ -9,7 +9,7 @@ import uvicorn
 
 
 app = FastAPI()
-
+app.include_router(api_router)
 
 
 @app.exception_handler(ExpiredSignatureError)
@@ -29,12 +29,7 @@ async def invalid_token_handler(request: Request , exc : InvalidTokenError):
     )
 
 
-app.include_router(api_router)
 
-
-
-if __name__ == "__main__":
-    uvicorn.run("main:app", reload=True)
 
 app.add_middleware(
     CORSMiddleware,
@@ -43,5 +38,10 @@ app.add_middleware(
     allow_headers=["*"],
     allow_origins=["http://localhost:5174"],
 )
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", reload=True)
+
+
 
 
