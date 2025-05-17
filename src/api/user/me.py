@@ -42,8 +42,7 @@ async def get_info(
 
 
         
-        return [
-            {
+        return {
             "id": user.id,
             "studentStatus": user.studentStatus,
             "semester": user.semester,
@@ -69,10 +68,10 @@ async def get_info(
             "subjects": [{
                 "subject":  user_subject.subject_name,
                 "gade": user_subject.grade,
-                "subjec-code": user_subject.semester_code
+                "subjec_code": user_subject.semester_code
             } for user_subject in user_subjects]
             }
-        ]
+
 
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as e:
         raise HTTPException(

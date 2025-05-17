@@ -58,7 +58,7 @@ async def get_by_id(
             "subjects": [{
                 "subject":  user_subject.subject_name,
                 "gade": user_subject.grade,
-                "subjec-code": user_subject.semester_code
+                "subjec_code": user_subject.semester_code
             } for user_subject in user_subjects]
             }
 
