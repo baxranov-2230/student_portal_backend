@@ -1,4 +1,4 @@
-from fastapi import APIRouter , Depends , Request , HTTPException , status
+from fastapi import APIRouter, Depends, Request, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.core.base import settings
@@ -12,47 +12,41 @@ import jwt
 me_router = APIRouter()
 
 
-
 @me_router.get("/me")
 async def get_info(
-    token : str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db)
+    token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ):
     try:
         payload = jwt.decode(
             token,
             settings.ACCESS_SECRET_KEY,
             algorithms=[settings.ALGORITHM],
-            options={"verify_exp": True}
+            options={"verify_exp": True},
         )
         username: str = payload.get("sub")
         if username is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token: username not found"
+                detail="Invalid token: username not found",
             )
 
         user = await get_user(db=db, username=username)
         if user is None:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
             )
-        
+
         stmt = select(UserSubject).where(UserSubject.user_id == user.id)
         result = await db.execute(stmt)
         user_subjects = result.scalars().all()
 
-
-        
-        return [
-            {
+        return {
             "id": user.id,
             "studentStatus": user.studentStatus,
             "semester": user.semester,
             "educationForm": user.educationForm,
             "address": user.address,
-            "educationType": user.educationType ,
+            "educationType": user.educationType,
             "last_name": user.last_name,
             "phone": user.phone,
             "paymentForm": user.paymentForm,
@@ -69,20 +63,17 @@ async def get_info(
             "birth_date": user.birth_date,
             "specialty": user.specialty,
             "level": user.level,
-            "subjects": [{
-                "subject":  user_subject.subject_name,
-                "gade": user_subject.grade,
-                "subjec-code": user_subject.semester_code
-            } for user_subject in user_subjects]
-            }
-        ]
+            "subjects": [
+                {
+                    "subject": user_subject.subject_name,
+                    "gade": user_subject.grade,
+                    "subjec-code": user_subject.semester_code,
+                }
+                for user_subject in user_subjects
+            ],
+        }
 
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as e:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid token: {str(e)}"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token: {str(e)}"
         )
-
-
-
-    

@@ -5,10 +5,7 @@ from .achievements import achievement_router
 from .cert import cert_router
 
 
-user_router = APIRouter(
-    tags=["User"],
-    prefix="/user"
-)
+user_router = APIRouter(tags=["User"], prefix="/user")
 
 user_router.include_router(me_router)
 user_router.include_router(research_router)

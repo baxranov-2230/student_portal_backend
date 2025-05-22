@@ -1,12 +1,13 @@
-from sqlalchemy import Column , Integer , String , Date , ForeignKey
+from sqlalchemy import Column, Integer, String, Date, ForeignKey
 from src.core.base import Base
 from sqlalchemy.orm import relationship
+
 
 class Cert(Base):
     __tablename__ = "certs"
 
-    id = Column(Integer , primary_key=True)
-    user_id = Column(Integer , ForeignKey("users.id"))
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
     language = Column(String(50), nullable=False)
     certificate_type = Column(String(50), nullable=False)
     level = Column(String(10), nullable=False)
@@ -14,8 +15,7 @@ class Cert(Base):
     date_of_issue = Column(Date, nullable=False)
     file_path = Column(String(255))
 
-
-    user = relationship("User" , back_populates="cert")
+    user = relationship("User", back_populates="cert")
 
     def __repr__(self):
         return (
