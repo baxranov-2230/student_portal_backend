@@ -11,7 +11,7 @@ register_router = APIRouter()
 @register_router.post("/register")
 async def register(user_item: RegisterUser, db: AsyncSession = Depends(get_db)):
     admin_data = AdminCreate(
-        full_name=user_item.full_name,
+        full_na=user_item.full_name,
         password=user_item.password,
         role=UserRole.admin.value,
     )
