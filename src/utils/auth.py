@@ -24,7 +24,6 @@ async def authenticate_user(credentials: LoginRequest) -> str:
 
     if not username or not password:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Login and password are required",
         )
 
