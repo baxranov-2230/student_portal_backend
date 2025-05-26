@@ -37,7 +37,7 @@ class User(Base):
     level = Column(String, nullable=True)
     semester = Column(String, nullable=True)
     address = Column(String, nullable=True)
-    role = Column(SqlEnum(UserRole), default=UserRole.student)
+    role = Column(SqlEnum(UserRole), default=UserRole.student.value)
 
     cert = relationship("Cert", back_populates="user")
     achievement = relationship("Achievement", back_populates="user")

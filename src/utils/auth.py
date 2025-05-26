@@ -63,6 +63,8 @@ async def authenticate_admin(credentials: LoginRequest, db: AsyncSession):
 
     if user_data:
         return user_data
+    if not user_data:
+        return None
 
 
 async def fetch_user_data(token: str) -> dict:
@@ -264,7 +266,7 @@ async def save_user_subject_to_db(
         raise Exception(f"Failed to save subjects: {str(e)}")
 
 
-async def check_semester(semestr: str):
+def check_semester(semestr: str):
     match semestr:
         case "1-semestr":
             return 11
