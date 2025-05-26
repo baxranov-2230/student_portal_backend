@@ -1,5 +1,5 @@
-from pydantic import BaseModel , ConfigDict
-from datetime import datetime , date
+from pydantic import BaseModel, ConfigDict
+from datetime import datetime, date
 
 
 class AchievementBase(BaseModel):
@@ -14,7 +14,6 @@ class AchievementResposne(AchievementBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
-
 
 
 class AchievementUpdate(BaseModel):
