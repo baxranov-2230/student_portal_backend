@@ -5,6 +5,7 @@ from src.models import User, UserGpa
 from src.exception.base_exception import *
 from typing import TypeVar, Generic, Type, List
 from pydantic import BaseModel
+from typing import Any
 import os
 from fastapi import UploadFile
 
@@ -72,6 +73,14 @@ async def get_user(db: AsyncSession, username: str):
     excute = await db.execute(stmst)
     return excute.scalars().first()
 
+
+async def get_by_field(db: AsyncSession, model, field_name: str, field_value: Any):
+    if not hasattr(model, field_name):
+        raise ValueError(f"Field '{field_name}' does not exist on model {model.__name__}")
+    query = select(model).where(getattr(model, field_name) == field_value)
+    scalars = await db.scalars(query)
+    return scalars.first()
+    
 
 async def get_by_id(db: AsyncSession, item_id: int):
     stmst = select(UserGpa).where(UserGpa.user_id == item_id)

@@ -287,7 +287,8 @@ def check_semester(semestr: str):
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
+    token: str = Depends(oauth2_scheme), 
+    db: AsyncSession = Depends(get_db)
 ):
     try:
         payload = jwt.decode(
@@ -300,8 +301,20 @@ async def get_current_user(
                 detail="Username not found in token",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        
+        user_data = await get_by_field(db=db , model=User ,field_name="full_name" , field_value=username)
 
+        if user_data:
+            return user_data
+        
         user = await get_user(db=db, username=username)
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
         return user
 
     except jwt.ExpiredSignatureError:
@@ -318,15 +331,17 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-
 def RoleChecker(valid_roles: str | List[str]) -> Callable:
     async def _role_checker(user: User = Depends(get_current_user)):
         roles = [valid_roles] if isinstance(valid_roles, str) else valid_roles
         if user.role not in roles:
             raise HTTPException(
-                status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Role '{user.role}' not allowed",
             )
         return user
 
     return _role_checker
+
+
+
