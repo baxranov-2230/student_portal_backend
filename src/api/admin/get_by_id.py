@@ -64,7 +64,7 @@ async def get_by_id(
     }
 
 
-@get_router.get("/get-all")
+@get_router.get("/get_all")
 async def get_all(
     min_gpa: float = Query(None),
     limit: int = Query(25, ge=1),
