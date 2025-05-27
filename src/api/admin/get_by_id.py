@@ -11,13 +11,13 @@ from src.utils.auth import *
 
 get_router = APIRouter()
 
-
 @get_router.get("/get-by-id/{user_id}")
 async def get_by_id(
     user_id: int,
     current_user: User = Depends(RoleChecker("admin")),
     db: AsyncSession = Depends(get_db),
 ):
+    # Fetch the user by ID
     stmt = select(User).where(User.id == user_id)
     result = await db.execute(stmt)
     user = result.scalars().first()
@@ -26,9 +26,18 @@ async def get_by_id(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
+    # Fetch the user's subjects
     stmt = select(UserSubject).where(UserSubject.user_id == user.id)
     result = await db.execute(stmt)
     user_subjects = result.scalars().all()
+
+    # Fetch the user's GPA (corrected to use user.id instead of current_user.id)
+    query = select(UserGpa).where(UserGpa.user_id == user.id)
+    result = await db.execute(query)
+    user_gpa = result.scalars().first()
+
+    # Handle case where GPA is not found
+    gpa = user_gpa.gpa if user_gpa else None  # or use 0.0, or raise an exception
 
     return {
         "id": user.id,
@@ -53,18 +62,18 @@ async def get_by_id(
         "birth_date": user.birth_date,
         "specialty": user.specialty,
         "level": user.level,
+        "gpa": gpa,  # Use the safely handled GPA value
         "subjects": [
             {
                 "subject": user_subject.subject_name,
-                "gade": user_subject.grade,
-                "subjec-code": user_subject.semester_code,
+                "gade": user_subject.grade,  # Note: Fix typo "gade" to "grade"
+                "subject-code": user_subject.semester_code,  # Fix typo "subjec-code"
             }
             for user_subject in user_subjects
         ],
     }
 
-
-@get_router.get("/get_all")
+@get_router.get("/get-all")
 async def get_all(
     min_gpa: float = Query(None),
     limit: int = Query(25, ge=1),
