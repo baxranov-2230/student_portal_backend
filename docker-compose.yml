@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=student_portal
+      - DB_USER=ahror2230
+      - DB_PASSWORD=ahror2230
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=ahror2230
+      - POSTGRES_PASSWORD=ahror2230
+      - POSTGRES_DB=sharq_university
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"  # Nginx tashqi so'rovlarni 80-portda qabul qiladi
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf  # nginx.conf faylini konteynerga ulaymiz
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:
