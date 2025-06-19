@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError

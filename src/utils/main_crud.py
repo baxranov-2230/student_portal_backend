@@ -1,9 +1,8 @@
-from typing import Type
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.models import User, UserGpa
-from src.exception.base_exception import *
-from typing import TypeVar, Generic, Type, List
+from src.exception.base_exception import main_exeption , not_found
+from typing import TypeVar, Generic, List , Type
 from pydantic import BaseModel
 from typing import Any
 import os

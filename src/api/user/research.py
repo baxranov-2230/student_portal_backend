@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Request
+from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.base import get_db
 from src.schemas.research import ResearchBase, ResearchUpdate
@@ -48,7 +48,7 @@ async def get_by_id(
     return await main_crud.get(db=db, id=research_id, user_id=user_data.id)
 
 
-@research_router.get("/get-all")
+@research_router.get("/get_all")
 async def get_all(
     token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ):

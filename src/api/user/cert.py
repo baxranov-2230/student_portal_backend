@@ -50,7 +50,7 @@ async def get_by_id(
     return await main_crud.get(db=db, id=cert_id, user_id=user_data.id)
 
 
-@cert_router.get("/get-all")
+@cert_router.get("/get_all")
 async def get_all(
     token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ):

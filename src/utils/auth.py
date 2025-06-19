@@ -6,7 +6,10 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer
 from src.models.user_subject import UserSubject
-from .main_crud import *
+from .main_crud import get_user , get_by_field
+from src.models.user import User 
+from sqlalchemy import select
+from src.models.user_gpa import UserGpa
 from typing import Dict, Any, List
 import jwt
 from typing import Callable
@@ -14,7 +17,13 @@ from fastapi import Depends
 from src.core.base import get_db
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="auth/login",
+    scopes={
+        "admin": "make every thing",
+        "student": "you are student"
+    }
+)
 
 
 async def authenticate_user(credentials: LoginRequest) -> str:
@@ -138,38 +147,43 @@ def map_user_data(api_data: dict) -> dict:
     return user_data
 
 
-def map_user_gpa(api_data) -> dict:
+def map_user_gpa(api_data) -> list[dict]:
     data_list = api_data.get("data")
     if not data_list or not isinstance(data_list, list):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="API response does not contain valid data array",
         )
-    data_item = data_list[0]
 
-    try:
-        gpa_value = data_item.get("gpa")
-        mapped_data = {
-            "gpa": float(gpa_value) if gpa_value is not None else None,
-            "educationYear": data_item.get("educationYear", {}).get("name"),
-            "subjects": data_item.get("subjects"),
-            "level": data_item.get("level", {}).get("name"),
-            "credit_sum": str(data_item.get("credit_sum")),
-            "debt_subjects": data_item.get("debt_subjects"),
-        }
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid GPA format: must be a valid number",
-        )
+    mapped_results = []
+    for data_item in data_list:
+        try:
+            gpa_value = data_item.get("gpa")
+            mapped_data = {
+                "gpa": float(gpa_value) if gpa_value is not None else None,
+                "educationYear": data_item.get("educationYear", {}).get("name"),
+                "subjects": data_item.get("subjects"),
+                "level": data_item.get("level", {}).get("name"),
+                "credit_sum": str(data_item.get("credit_sum")),
+                "debt_subjects": data_item.get("debt_subjects"),
+            }
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid GPA format: must be a valid number",
+            )
 
-    missing_fields = [field for field, value in mapped_data.items() if value is None]
-    if missing_fields:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Required fields missing in API response: {', '.join(missing_fields)}",
-        )
-    return mapped_data
+        missing_fields = [field for field, value in mapped_data.items() if value is None]
+        if missing_fields:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Required fields missing in API response: {', '.join(missing_fields)}",
+            )
+        
+        mapped_results.append(mapped_data)
+
+    return mapped_results
+
 
 
 def map_subject_grades(api_data: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -204,15 +218,17 @@ async def save_user_data_to_db(db: AsyncSession, user_data: dict):
     return new_user
 
 
-async def save_user_gpa_to_db(db: AsyncSession, user_id: int, user_gpa: dict):
-    result = await get_by_id(db=db, item_id=user_id)
-    if result:
-        return result
-    new_user = UserGpa(user_id=user_id, **user_gpa)
-    db.add(new_user)
+async def save_user_gpa_to_db(db: AsyncSession, user_id: int, user_gpa_list: list[dict]):
+    saved_records = []
+    for user_gpa in user_gpa_list:
+        new_user = UserGpa(user_id=user_id, **user_gpa)
+        db.add(new_user)
+        saved_records.append(new_user)
+
     await db.commit()
-    await db.refresh(new_user)
-    return new_user
+    for user in saved_records:
+        await db.refresh(user)
+    return saved_records
 
 
 async def save_user_subject_to_db(
@@ -302,7 +318,7 @@ async def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
-        user_data = await get_by_field(db=db , model=User ,field_name="full_name" , field_value=username)
+        user_data = await get_by_field(db=db , model=User , field_name="full_name" , field_value=username)
 
         if user_data:
             return user_data
@@ -342,6 +358,8 @@ def RoleChecker(valid_roles: str | List[str]) -> Callable:
         return user
 
     return _role_checker
+
+
 
 
 

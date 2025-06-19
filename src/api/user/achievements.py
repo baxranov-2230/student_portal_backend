@@ -45,7 +45,7 @@ async def get_by_id(
     return await main_crud.get(db=db, id=achievement_id, user_id=user_data.id)
 
 
-@achievement_router.get("/get-all")
+@achievement_router.get("/get_all")
 async def get_all(
     token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ):

@@ -1,8 +1,22 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends , BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
-from src.utils.auth import *
+from src.utils.auth import ( 
+    authenticate_admin, 
+    authenticate_user, 
+    fetch_user_data, 
+    map_user_data, 
+    save_user_data_to_db,
+    check_semester,
+    fetch_user_gpa,
+    map_user_gpa,
+    fetch_subject,
+    save_user_subject_to_db,
+    save_user_gpa_to_db,
+    map_subject_grades
+)
+from src.core.config import settings
+from src.models.user import User
 from datetime import timedelta
 from src.utils.jwt_utils import create_access_token, create_refresh_token
 from src.core.base import get_db
@@ -11,6 +25,7 @@ login_router = APIRouter()
 
 @login_router.post("/login")
 async def login(
+    background_tasks: BackgroundTasks,
     credentials: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
 ):
@@ -63,9 +78,10 @@ async def login(
         )
 
         user_gpa = await fetch_user_gpa(token=token)
-        user_gpa = map_user_gpa(user_gpa)
 
-        await save_user_gpa_to_db(db=db, user_id=user_id, user_gpa=user_gpa)
+        user_gpa_list = map_user_gpa(user_gpa)  # returns list of dicts
+        await save_user_gpa_to_db(db=db, user_id=user_id, user_gpa_list=user_gpa_list)
+
 
         subject_data = []
         for i in range(11, semester_number + 1):
