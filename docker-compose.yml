@@ -21,7 +21,7 @@ services:
     environment:
       - POSTGRES_USER=ahror2230
       - POSTGRES_PASSWORD=ahror2230
-      - POSTGRES_DB=sharq_university
+      - POSTGRES_DB=student_portal
     ports:
       - "5433:5432"
     volumes:
