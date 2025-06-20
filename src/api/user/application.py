@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.models.application import Application
@@ -8,27 +7,13 @@ from src.models.user_gpa import UserGpa
 from src.utils.auth import RoleChecker
 from src.core.base import get_db
 from typing import List
-
-# Pydantic models for request/response
-class ApplicationCreateResponse(BaseModel):
-    id: int
-    user_id: int
-    last_name: str
-    first_name: str
-    third_name: str | None
-    student_id_number: str
-    image_path: str | None
-    group: str
-    faculty: str
-    gpa: float
+from src.schemas.application import ApplicationCreateResponse , ApplicationDeleteResponse
 
 
 
-class ApplicationDeleteResponse(BaseModel):
-    message: str
 
-# Router setup
-application_router = APIRouter(prefix="/application", tags=["Applications"])
+
+application_router = APIRouter(prefix="/application")
 
 @application_router.post("/create", response_model=ApplicationCreateResponse)
 async def create_application(
@@ -75,9 +60,7 @@ async def create_application(
     # Create new application
     new_application = Application(
         user_id=current_user.id,
-        last_name=current_user.last_name,
-        first_name=current_user.first_name,
-        third_name=current_user.third_name,
+        full_name = current_user.full_name,
         student_id_number=current_user.student_id_number,
         image_path=current_user.image_path,
         group=current_user.group,

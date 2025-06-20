@@ -4,28 +4,18 @@ from sqlalchemy.future import select
 from src.models.application import Application
 from src.utils.auth import RoleChecker
 from src.core.base import get_db
-from pydantic import BaseModel
+from src.schemas.application import ApplicationResponse
 from typing import List
 
-# Pydantic model for response
-class ApplicationResponse(BaseModel):
-    id: int
-    user_id: int
-    last_name: str
-    first_name: str
-    third_name: str | None
-    student_id_number: str
-    image_path: str | None
-    group: str
-    faculty: str
-    gpa: float
+
+
 
  
 
 # Router setup
-get_router = APIRouter(prefix="/applications", tags=["Admin Applications"])
+get_router = APIRouter(prefix="/applications")
 
-@get_router.get("/{application_id}", response_model=ApplicationResponse)
+@get_router.get("/get_by_id/{application_id}", response_model=ApplicationResponse)
 async def get_application_by_id(
     application_id: int,
     current_user: dict = Depends(RoleChecker("admin")),
@@ -50,7 +40,7 @@ async def get_application_by_id(
 
     return application
 
-@get_router.get("/", response_model=List[ApplicationResponse])
+@get_router.get("/get_all", response_model=List[ApplicationResponse])
 async def get_all_applications(
     min_gpa: float = Query(None, ge=0.0, le=5.0),
     limit: int = Query(25, ge=1, le=100),
