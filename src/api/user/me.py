@@ -52,6 +52,8 @@ async def get_info(
             "paymentForm": user.paymentForm,
             "first_name": user.first_name,
             "group": user.group,
+            "passport_pin": user.passport_pin,
+            "passport_number": user.passport_number,
             "third_name": user.third_name,
             "student_id_number": user.student_id_number,
             "gender": user.gender,
