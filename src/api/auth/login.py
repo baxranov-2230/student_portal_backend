@@ -36,7 +36,7 @@ async def login(
     if admin_data:
         access_token_expire = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = await create_access_token(
-            {"sub": admin_data.full_name}, access_token_expire
+            {"sub": admin_data.full_name, "role": "admin"}, access_token_expire
         )
         refresh_token_expire = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
         refresh_token = await create_refresh_token(
@@ -70,7 +70,7 @@ async def login(
 
         access_token_expire = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = await create_access_token(
-            {"sub": user_data.student_id_number}, access_token_expire
+            {"sub": user_data.student_id_number, "role": "student"}, access_token_expire
         )
         refresh_token_expire = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
         refresh_token = await create_refresh_token(
