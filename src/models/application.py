@@ -7,7 +7,7 @@ class Application(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(ForeignKey("users.id"))
-    full_name = Column(String , nullable=False)
+    full_name = Column(String , nullable=True)
     student_id_number = Column(String, nullable=True) 
     image_path = Column(String, nullable=True) 
     group = Column(String, nullable=True)
