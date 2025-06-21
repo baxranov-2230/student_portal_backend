@@ -15,12 +15,12 @@ main_crud = MainCrud(model=Achievement)
 
 @achievement_router.post("/create")
 async def create(
-    type: str,
-    award_date: date,
-    title: str,
-    file: UploadFile = File(...),
-    token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db),
+        type: str,
+        award_date: date,
+        title: str,
+        file: UploadFile = File(...),
+        token: str = Depends(oauth2_scheme),
+        db: AsyncSession = Depends(get_db),
 ):
     user_data = await get_user_from_token(db=db, token=token)
     saved_file_path = await save_file(file=file)
@@ -37,9 +37,9 @@ async def create(
 
 @achievement_router.get("/get/{achievement_id}")
 async def get_by_id(
-    achievement_id: int,
-    token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db),
+        achievement_id: int,
+        token: str = Depends(oauth2_scheme),
+        db: AsyncSession = Depends(get_db),
 ):
     user_data = await get_user_from_token(db=db, token=token)
     return await main_crud.get(db=db, id=achievement_id, user_id=user_data.id)
@@ -47,7 +47,7 @@ async def get_by_id(
 
 @achievement_router.get("/get_all")
 async def get_all(
-    token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
+        token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ):
     user_data = await get_user_from_token(db=db, token=token)
     return await main_crud.get_all(db=db, user_id=user_data.id)
@@ -55,13 +55,13 @@ async def get_all(
 
 @achievement_router.put("/update/{achievement_id}")
 async def update(
-    achievement_id: int,
-    type: str | None = None,
-    award_date: date | None = None,
-    title: str | None = None,
-    file: UploadFile = File(None),
-    token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db),
+        achievement_id: int,
+        type: str | None = None,
+        award_date: date | None = None,
+        title: str | None = None,
+        file: UploadFile = File(None),
+        token: str = Depends(oauth2_scheme),
+        db: AsyncSession = Depends(get_db),
 ):
     if file:
         new_documation = await save_file(file=file)
@@ -83,9 +83,9 @@ async def update(
 
 @achievement_router.delete("/delete/{achievement_id}")
 async def delete(
-    achievement_id: int,
-    token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db),
+        achievement_id: int,
+        token: str = Depends(oauth2_scheme),
+        db: AsyncSession = Depends(get_db),
 ):
     user_data = await get_user_from_token(db=db, token=token)
     await main_crud.delete(db=db, id=achievement_id, user_id=user_data.id)

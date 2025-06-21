@@ -6,6 +6,7 @@ from src.core.base import get_db
 from src.utils.main_crud import get_user
 from src.utils.auth import oauth2_scheme
 from src.models.user_subject import UserSubject
+from src.models.user_gpa import UserGpa
 import jwt
 
 
@@ -40,6 +41,11 @@ async def get_info(
         result = await db.execute(stmt)
         user_subjects = result.scalars().all()
 
+        stmt_gpa = select(UserGpa).where(UserGpa.user_id == user.id)
+        result_gpa = await db.execute(stmt_gpa)
+        user_gpa = result_gpa.scalars().first()
+
+
         return {
             "id": user.id,
             "studentStatus": user.studentStatus,
@@ -65,6 +71,7 @@ async def get_info(
             "birth_date": user.birth_date,
             "specialty": user.specialty,
             "level": user.level,
+            "gpa" : user_gpa.gpa,
             "subjects": [
                 {
                     "subject": user_subject.subject_name,
