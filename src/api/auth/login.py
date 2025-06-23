@@ -25,14 +25,10 @@ login_router = APIRouter()
 
 @login_router.post("/login")
 async def login(
-    background_tasks: BackgroundTasks,
     credentials: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
 ):
     admin_data: User = await authenticate_admin(credentials=credentials, db=db)
-
-
-
     if admin_data:
         access_token_expire = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = await create_access_token(

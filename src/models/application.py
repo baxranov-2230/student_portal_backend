@@ -1,6 +1,7 @@
-from sqlalchemy import Column , String , Integer , Float , ForeignKey
+from sqlalchemy import Column , String , Integer , Float , ForeignKey , DateTime
 from sqlalchemy.orm import relationship
 from src.core.base import Base
+from datetime import datetime , timezone
 
 class Application(Base):
     __tablename__ = "applications"
@@ -13,6 +14,8 @@ class Application(Base):
     group = Column(String, nullable=True)
     faculty = Column(String, nullable=True) 
     gpa = Column(Float , nullable=True)
+    filepath = Column(String , nullable=True)
+    create_date = Column(DateTime , default=lambda: datetime.now(timezone.utc).replace(microsecond=0))
 
     user = relationship("User" , back_populates="application")
 

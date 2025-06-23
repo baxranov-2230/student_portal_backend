@@ -6,7 +6,9 @@ from src.utils.auth import RoleChecker
 from src.core.base import get_db
 from src.schemas.application import ApplicationResponse
 from typing import List
-
+from src.models import User
+from fastapi.responses import FileResponse
+import os
 
 
 
@@ -74,3 +76,40 @@ async def get_all_applications(
         )
 
     return applications
+
+
+@get_router.get("/download/{application_id}")
+async def download_application_pdf(
+    application_id: int,
+    current_user: User = Depends(RoleChecker("admin")),
+    db: AsyncSession = Depends(get_db)
+):
+    if application_id <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ariza ID musbat butun son bo'lishi kerak"
+        )
+
+    stmt = select(Application).where(
+        Application.id == application_id
+    )
+    result = await db.execute(stmt)
+    application = result.scalars().first()
+
+    if not application:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Ariza topilmadi"
+        )
+
+    if not os.path.exists(application.filepath):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Fayl tizimida ariza topilmadi"
+        )
+
+    return FileResponse(
+        path=application.filepath,
+        media_type="application/pdf",
+        filename=os.path.basename(application.filepath)
+    )
