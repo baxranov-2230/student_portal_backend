@@ -1,9 +1,10 @@
 from weasyprint import HTML, CSS
 from datetime import datetime
 import os
+import uuid
 
 
-def generate_grant_pdf(filepath, user, gpa):
+def generate_application_pdf(filepath, user, gpa):
     """
     Generate grant request PDF using WeasyPrint
     """
@@ -124,3 +125,63 @@ def generate_rejection_pdf(filepath, user, gpa):
     HTML(string=html).write_pdf(filepath)
 
 
+def generate_acceptance_pdf(filepath, user, gpa):
+    academic_score = gpa * 16
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M %z')
+    
+    html = f"""
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body {{
+                font-family: 'Times New Roman', serif;
+                margin: 50px;
+                font-size: 14pt;
+            }}
+            .greeting {{
+                margin-bottom: 30px;
+            }}
+            .content {{
+                text-align: justify;
+                line-height: 1.6;
+            }}
+            .footer {{
+                margin-top: 60px;
+                text-align: left;
+                font-size: 12pt;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="greeting">
+            Hurmatli {user.full_name}!
+        </div>
+
+        <div class="content">
+            Sizning GPA balingiz {gpa}, ya’ni Vazirlar Mahkamasining 149-sonli qarori bilan
+            tasdiqlangan Nizomning 2-bobi, 13-xat boshida keltirilgan "Ta’lim grantiga
+            talabgorlardan joriy o‘quv yilida o‘zlashtirish ko‘rsatkichi bo‘yicha GPA
+            ko‘rsatkichi 3.5 va undan yuqori bo‘lishi talab etiladi" degan talablarga mos keladi.
+            Akademik o‘zlashtirish ko‘rsatkichingiz: {academic_score}.
+            Shu sababli, siz Oliy ta’lim tashkilotlarida talabalarga grantlarni taqdim etish va
+            qayta taqsimlash bo‘yicha tanlovda ishtirok etish huquqiga ega ekansiz.
+        </div>
+
+        <div class="footer">
+            Sana va vaqt: {current_time}
+        </div>
+    </body>
+    </html>
+    """
+
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    HTML(string=html).write_pdf(filepath)
+
+
+
+def generate_filename(prefix="file", extension="txt"):
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # 20250623_1904
+    unique_id = uuid.uuid4().hex[:6]  # e.g., a1b2c3
+    filename = f"{prefix}_{timestamp}_{unique_id}.{extension}"
+    return filename

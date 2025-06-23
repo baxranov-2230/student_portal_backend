@@ -12,7 +12,7 @@ from typing import List
 from docx import Document
 from src.schemas.application import ApplicationCreateResponse , ApplicationDeleteResponse
 import os
-from src.utils.pdf_generator import generate_grant_pdf , generate_rejection_pdf
+from src.utils.pdf_generator import generate_acceptance_pdf , generate_rejection_pdf ,  generate_application_pdf , generate_filename
 
 application_router = APIRouter(prefix="/application")
 
@@ -21,21 +21,6 @@ async def create_application(
     current_user: User = Depends(RoleChecker("student")),
     db: AsyncSession = Depends(get_db)
 ):
-    stmt = select(UserGpa).where(
-        UserGpa.user_id == current_user.id,
-        UserGpa.level == "1-kurs"
-    )
-    result = await db.execute(stmt)
-    user_gpa = result.scalars().first()
-
-    if not user_gpa:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Foydalanuvchi uchun GPA ma'lumotlari topilmadi"
-        )
-
-
-    
     stmt_app = select(Application).where(Application.user_id == current_user.id)
     result_app = await db.execute(stmt_app)
     existing_application = result_app.scalars().first()
@@ -45,35 +30,58 @@ async def create_application(
             status_code=status.HTTP_409_CONFLICT,
             detail="Siz allaqachon ariza topshirgansiz"
         )
-    
+    # Check for GPA data
+    stmt = select(UserGpa).where(
+        UserGpa.user_id == current_user.id,
+        UserGpa.level == "1-kurs"
+    )
+    result = await db.execute(stmt)
+    user_gpa = result.scalars().first()
+
+    if not user_gpa or user_gpa.gpa is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Foydalanuvchi uchun GPA ma'lumotlari topilmadi"
+        )
+
+    # Validate education year
     try:
         start_year = int(user_gpa.educationYear.split("-")[0])
     except (ValueError, AttributeError):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=400,
             detail="Ta'lim yili formati noto'g'ri"
         )
 
     if start_year < 2024:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=400,
             detail="Arizalar faqat 2024 yoki undan keyingi ta'lim yillari uchun qabul qilinadi"
         )
-    
-    
+
+    # Prepare file paths
     upload_dir = "uploads/"
     os.makedirs(upload_dir, exist_ok=True)
-    filename = f"user_{current_user.full_name}_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')  # 202506231904
+    filename = f"user_{current_user.full_name.replace(' ', '_')}_{timestamp}.pdf"
     filepath = os.path.join(upload_dir, filename)
 
+    # Generate initial application PDF
+    generate_application_pdf(filepath=filepath, user=current_user, gpa=user_gpa.gpa)
 
+    # Determine response type and generate appropriate PDF
     if user_gpa.gpa < 3.5:
-        generate_rejection_pdf(filepath=filename , user=current_user , gpa=user_gpa.gpa)
-    else: 
-        generate_grant_pdf(filepath=filepath , user=current_user , gpa=user_gpa.gpa)
+        generated_filename = generate_filename(prefix="rejection", extension="pdf")
+        rejection_filepath = os.path.join(upload_dir, generated_filename)
+        generate_rejection_pdf(filepath=rejection_filepath, user=current_user, gpa=user_gpa.gpa)
+        response_file_path = rejection_filepath
+    else:
+        generated_filename = generate_filename(prefix="acceptance", extension="pdf")
+        acceptance_filepath = os.path.join(upload_dir, generated_filename)
+        generate_acceptance_pdf(filepath=acceptance_filepath, user=current_user, gpa=user_gpa.gpa)
+        response_file_path = acceptance_filepath
 
-
-    # Create Application entry in DB
+    # Create Application entry
     new_application = Application(
         user_id=current_user.id,
         full_name=current_user.full_name,
@@ -83,9 +91,11 @@ async def create_application(
         faculty=current_user.faculty,
         gpa=user_gpa.gpa,
         filepath=filepath,
+        reponse_file=response_file_path,
         create_date=datetime.now().replace(microsecond=0)
     )
 
+    # Save to database
     try:
         db.add(new_application)
         await db.commit()
@@ -93,8 +103,8 @@ async def create_application(
     except Exception as e:
         await db.rollback()
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Ariza yaratishda xatolik yuz berdi: {e}"
+            status_code=500,
+            detail=f"Ariza yaratishda xatolik yuz berdi: {str(e)}"
         )
 
     return new_application

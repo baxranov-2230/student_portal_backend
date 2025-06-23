@@ -15,6 +15,7 @@ class Application(Base):
     faculty = Column(String, nullable=True) 
     gpa = Column(Float , nullable=True)
     filepath = Column(String , nullable=True)
+    reponse_file = Column(String , nullable=True)
     create_date = Column(DateTime , default=lambda: datetime.now(timezone.utc).replace(microsecond=0))
 
     user = relationship("User" , back_populates="application")
