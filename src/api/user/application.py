@@ -9,7 +9,6 @@ from src.models.user_gpa import UserGpa
 from src.utils.auth import RoleChecker
 from src.core.base import get_db
 from typing import List
-from docx import Document
 from src.schemas.application import ApplicationCreateResponse , ApplicationDeleteResponse
 import os
 from src.utils.pdf_generator import generate_acceptance_pdf , generate_rejection_pdf ,  generate_application_pdf , generate_filename
