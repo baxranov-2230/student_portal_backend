@@ -174,6 +174,44 @@ async def download_application_pdf(
         filename=os.path.basename(application.filepath)
     )
 
+
+@application_router.get("/download/response/{application_id}")
+async def download_application_pdf(
+    application_id: int,
+    current_user: User = Depends(RoleChecker("student")),
+    db: AsyncSession = Depends(get_db)
+):
+    if application_id <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ariza ID musbat butun son bo'lishi kerak"
+        )
+
+    stmt = select(Application).where(
+        Application.user_id == current_user.id,
+        Application.id == application_id
+    )
+    result = await db.execute(stmt)
+    application = result.scalars().first()
+
+    if not application:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Ariza topilmadi"
+        )
+
+    if not os.path.exists(application.filepath):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Fayl tizimida ariza topilmadi"
+        )
+
+    return FileResponse(
+        path=application.reponse_file,
+        media_type="application/pdf",
+        filename=os.path.basename(application.reponse_file)
+    )
+
 @application_router.get("/get_all", response_model=List[ApplicationCreateResponse])
 async def get_all_applications(
     current_user: User = Depends(RoleChecker("student")),
