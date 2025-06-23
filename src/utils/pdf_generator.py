@@ -15,13 +15,13 @@ def generate_application_pdf(filepath, user, gpa):
         <style>
             body {{
                 font-family: 'Times New Roman', serif;
-                margin: 50px;
+                
                 font-size: 14pt;
             }}
             .header {{
                 text-align: right;
                 line-height: 1.5;
-                margin-bottom: 30px;
+                margin-bottom: 15px;
                 font-weight: bold; 
             }}
             .title {{
@@ -39,30 +39,30 @@ def generate_application_pdf(filepath, user, gpa):
                 text-align: left;
                 font-size: 12pt;
                 display: flex;
-                flex-direction: row;
-                gap: 40px; 
+                flex-direction: column;
+                gap: 20px; 
                 font-weight: bold; 
             }}
         </style>
     </head>
     <body>
         <div class="header">
-            Navoiy davlat konchilik va texnologiyalar universiteti<br/>
+            Navoiy davlat konchilik va<br/> texnologiyalar universiteti<br/>
             rektori B.T. Mardonovga<br/>
         </div>
 
         <div class="title">Ariza</div>
 
-        <div class="content">
+        <div class="content" style="text-indent: 40px">
         Men {user.full_name} {user.faculty} fakultetining {user.level} {user.educationType} {user.group} guruhida tahsil olaman. 2024-2025 o‘quv yili uchun GPA ko‘rsatkichim {gpa}.
             
             Menga 2025-2026 o‘quv yili uchun Oʻzbekiston Respublikasi Vazirlar Mahkamasining “Oliy taʼlim tashkilotlarida talabalarga grantlarni taqdim etish va qayta taqsimlash tartibi toʻgʻrisidagi nizomni tasdiqlash haqida” 2025-yil 10-martdagi 149-sonli qarori bilan tasdiqlangan Nizomga muvofiq ta’lim grantiga talabgor sifatida ishtirok etishga ruxsat berishingizni so‘rayman.
         </div>
 
-        <div class=educationType"footer">
-          <div> {user.full_name}</div>   
-          <div> {user.student_id_number}</div>  
-          <div> {datetime.now().strftime('%Y-%m-%d')}</div>  
+        <div class="footer">
+          <div>F.I.O:  {user.full_name}</div>   
+          <div  >Talaba ID raqami:  {user.student_id_number}</div>  
+          <div> Ariza berilgan sana:  {datetime.now().strftime('%Y-%m-%d')}</div>  
         </div>
     </body>
     </html>
@@ -83,7 +83,6 @@ def generate_rejection_pdf(filepath, user, gpa):
         <style>
             body {{
                 font-family: 'Times New Roman', serif;
-                margin: 50px;
                 font-size: 14pt;
             }}
             .greeting {{
@@ -101,11 +100,11 @@ def generate_rejection_pdf(filepath, user, gpa):
         </style>
     </head>
     <body>
-        <div class="greeting">
-            Hurmatli {user.full_name}!
+        <div class="greeting" >
+           <b> Hurmatli {user.full_name}! </b>
         </div>
 
-        <div class="content">
+        <div class="content" style="text-indent: 40px">
             Sizning GPA balingiz {gpa}, ya’ni Vazirlar Mahkamasining 149-sonli qarori bilan
             tasdiqlangan Nizomning 2-bobi, 13-xat boshida keltirilgan "Ta’lim grantiga
             talabgorlardan joriy o‘quv yilida o‘zlashtirish ko‘rsatkichi bo‘yicha GPA
@@ -114,7 +113,7 @@ def generate_rejection_pdf(filepath, user, gpa):
             talabalarga grantlarni taqdim etish va qayta taqsimlash bo‘yicha tanlovda ishtirok eta olmaysiz.
         </div>
 
-        <div class="footer">
+        <div class="footer" style="color: red">
             Sana: {datetime.now().strftime('%Y-%m-%d')}
         </div>
     </body>
@@ -155,21 +154,18 @@ def generate_acceptance_pdf(filepath, user, gpa):
     </head>
     <body>
         <div class="greeting">
-            Hurmatli {user.full_name}!
+           <b> Hurmatli {user.full_name}! </b>
         </div>
 
-        <div class="content">
-            Sizning GPA balingiz {gpa}, ya’ni Vazirlar Mahkamasining 149-sonli qarori bilan
-            tasdiqlangan Nizomning 2-bobi, 13-xat boshida keltirilgan "Ta’lim grantiga
-            talabgorlardan joriy o‘quv yilida o‘zlashtirish ko‘rsatkichi bo‘yicha GPA
-            ko‘rsatkichi 3.5 va undan yuqori bo‘lishi talab etiladi" degan talablarga mos keladi.
+        <div class="content" >
+            Sizning GPA balingiz {gpa}. <br/>
+            Siz Oliy ta’lim tashkilotlarida talabalarga grantlarni taqdim etish va qayta taqsimlash bo‘yicha tanlovda ishtirok etdingiz.<br/>
             Akademik o‘zlashtirish ko‘rsatkichingiz: {academic_score}.
-            Shu sababli, siz Oliy ta’lim tashkilotlarida talabalarga grantlarni taqdim etish va
-            qayta taqsimlash bo‘yicha tanlovda ishtirok etish huquqiga ega ekansiz.
+           
         </div>
 
-        <div class="footer">
-            Sana va vaqt: {current_time}
+        <div class="footer" style="color: red">
+            Sana: {current_time}
         </div>
     </body>
     </html>

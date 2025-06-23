@@ -20,15 +20,15 @@ async def create_application(
     current_user: User = Depends(RoleChecker("student")),
     db: AsyncSession = Depends(get_db)
 ):
-    stmt_app = select(Application).where(Application.user_id == current_user.id)
-    result_app = await db.execute(stmt_app)
-    existing_application = result_app.scalars().first()
-
-    if existing_application:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Siz allaqachon ariza topshirgansiz"
-        )
+    # stmt_app = select(Application).where(Application.user_id == current_user.id)
+    # result_app = await db.execute(stmt_app)
+    # existing_application = result_app.scalars().first()
+    #
+    # if existing_application:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_409_CONFLICT,
+    #         detail="Siz allaqachon ariza topshirgansiz"
+    #     )
     # Check for GPA data
     stmt = select(UserGpa).where(
         UserGpa.user_id == current_user.id,
