@@ -27,12 +27,12 @@ oauth2_scheme = OAuth2PasswordBearer(
 
 
 async def authenticate_user(credentials: LoginRequest) -> str:
-
     username = credentials.username.strip()
     password = credentials.password.strip()
 
     if not username or not password:
         raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Login and password are required",
         )
 
@@ -46,21 +46,42 @@ async def authenticate_user(credentials: LoginRequest) -> str:
 
     payload = {"login": login, "password": password}
     headers = {"Content-Type": "application/json"}
-    async with httpx.AsyncClient() as client:
-        api_response = await client.post(
-            url=settings.HEMIS_LOGIN_URL, json=payload, headers=headers
-        )
-        api_response.raise_for_status()
 
-        response_data = api_response.json()
-        token = response_data.get("data", {}).get("token")
-        if not token:
+    try:
+        async with httpx.AsyncClient() as client:
+            api_response = await client.post(
+                url=settings.HEMIS_LOGIN_URL, json=payload, headers=headers
+            )
+            api_response.raise_for_status()
+
+            response_data = api_response.json()
+            token = response_data.get("data", {}).get("token")
+
+            if not token:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="No token received from the authentication server",
+                )
+
+            return token
+
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 401:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No token received from the authentication server",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid login credentials",
+            )
+        else:
+            raise HTTPException(
+                status_code=e.response.status_code,
+                detail=f"Authentication server error: {e.response.text}",
             )
 
-        return token
+    except httpx.RequestError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service is unavailable",
+        )
 
 
 async def authenticate_admin(credentials: LoginRequest, db: AsyncSession):
