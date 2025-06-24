@@ -10,30 +10,28 @@ count_router = APIRouter(
     tags=["Count"]
 )
 
-@count_router.get("/count_by_faculty")
+@count_router.get("/count_by_group")
 async def count_get(
     faculty_name: str = Query(..., description="Faculty name to count users from"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(RoleChecker("admin"))
 ):
     stmt = (
-        select(func.count(), User.faculty)
+        select(User.group, func.count())
         .where(User.faculty.ilike(f"%{faculty_name}%"))
-        .group_by(User.faculty)
+        .group_by(User.group)
     )
 
     result = await db.execute(stmt)
-    row = result.first()  # single row: (count, faculty)
+    rows = result.all()
 
-    if not row:
+    if not rows:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Topilmadi"
         )
 
-    count, faculty = row
-
-    return {
-        "faculty": faculty,  # real DB value
-        "count": count
-    }
+    return [
+        {"group": group, "count": count}
+        for group, count in rows
+    ]
