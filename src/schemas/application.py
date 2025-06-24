@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import Optional
+
 from pydantic import BaseModel
 
 class ApplicationCreateResponse(BaseModel):
@@ -9,6 +12,9 @@ class ApplicationCreateResponse(BaseModel):
     group: str
     faculty: str
     gpa: float
+    filepath: Optional[str] = None
+    create_date: datetime
+    reponse_file: Optional[str] = None
 
 
 
@@ -24,3 +30,6 @@ class ApplicationResponse(BaseModel):
     group: str
     faculty: str
     gpa: float
+    filepath: Optional[str] = None
+    create_date: datetime
+    reponse_file: Optional[str] = None
