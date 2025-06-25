@@ -16,7 +16,7 @@ class Application(Base):
     gpa = Column(Float , nullable=True)
     filepath = Column(String , nullable=True)
     reponse_file = Column(String , nullable=True)
-    create_date = Column(DateTime , default=lambda: datetime.now(timezone.utc).replace(microsecond=0))
+    create_date = Column(DateTime , default=lambda: datetime.now(timezone.utc).replace( hour=0, minute=0, second=0, microsecond=0))
 
     user = relationship("User" , back_populates="application")
 

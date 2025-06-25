@@ -126,7 +126,7 @@ def generate_rejection_pdf(filepath, user, gpa):
 
 def generate_acceptance_pdf(filepath, user, gpa):
     academic_score = gpa * 16
-    current_time = datetime.now().strftime('%Y-%m-%d %H:%M %z')
+    current_time = datetime.now().strftime('%Y-%m-%d')
     
     html = f"""
     <html>
