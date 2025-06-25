@@ -17,9 +17,9 @@ async def count_get(
     current_user: User = Depends(RoleChecker("admin"))
 ):
     stmt = (
-        select(User.group, func.count())
-        .where(User.faculty.ilike(f"%{faculty_name}%"))
-        .group_by(User.group)
+        select(User.specialty , func.count())
+        .where(User.specialty.ilike(f"%{faculty_name}%"))
+        .group_by(User.specialty)
     )
 
     result = await db.execute(stmt)
@@ -32,6 +32,6 @@ async def count_get(
         )
 
     return [
-        {"group": group, "count": count}
+        {"Specialty": group, "count": count}
         for group, count in rows
     ]
