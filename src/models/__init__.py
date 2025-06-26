@@ -5,4 +5,4 @@ from .certs import Cert
 from .research import Research
 from .user_subject import UserSubject
 from .application import Application
-
+from .student_activity_score import StudentActivityScore
