@@ -39,6 +39,7 @@ class User(Base):
     address = Column(String, nullable=True)
     role = Column(SqlEnum(UserRole), default=UserRole.student)
 
+    attendances = relationship("UserAttendance", back_populates="user")
     cert = relationship("Cert", back_populates="user")
     achievement = relationship("Achievement", back_populates="user")
     research = relationship("Research", back_populates="user")

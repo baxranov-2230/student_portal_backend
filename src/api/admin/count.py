@@ -7,18 +7,17 @@ from src.utils.auth import RoleChecker
 
 count_router = APIRouter(
     prefix="/count",
-    tags=["Count"]
 )
 
-@count_router.get("/count_by_group")
+@count_router.get("/count_by_specialty")
 async def count_get(
-    faculty_name: str = Query(..., description="Faculty name to count users from"),
+    specialty_name: str = Query(..., description="Faculty name to count users from"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(RoleChecker("admin"))
 ):
     stmt = (
         select(User.specialty , func.count())
-        .where(User.specialty.ilike(f"%{faculty_name}%"))
+        .where(User.specialty.ilike(f"%{specialty_name}%"))
         .group_by(User.specialty)
     )
 

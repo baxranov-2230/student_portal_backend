@@ -15,6 +15,10 @@ import jwt
 from typing import Callable
 from fastapi import Depends
 from src.core.base import get_db
+from src.models.user_attendance import UserAttendance
+from sqlalchemy.exc import SQLAlchemyError
+
+
 
 
 oauth2_scheme = OAuth2PasswordBearer(
@@ -121,6 +125,15 @@ async def fetch_subject(semester: int, token: str):
         response.raise_for_status()
         return response.json()
 
+async def fetch_attendance(semester_code: int, token: str):
+    subject_id = 0
+    params = {"subject": subject_id, "semester": semester_code}
+    headers = {"Authorization": f"Bearer {token}"}
+    async with httpx.AsyncClient() as client:
+            response = await client.get(url=settings.HEMIS_USER_ATTENDANCE, params=params, headers=headers)
+            response.raise_for_status()
+            return response.json()
+             
 
 def map_user_data(api_data: dict) -> dict:
     user_data = {
@@ -226,6 +239,61 @@ def map_subject_grades(api_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         result.append(subject_data)
     return result
 
+def map_attendance_records(api_data: Dict[str, Any]) -> list[Dict[str, Any]]:
+    data = api_data.get("data", [])
+    result = []
+
+    for item in data:
+        mapped = {
+            "subject_name": item["subject"]["name"],
+            "semester_name": item["semester"]["name"],
+            "trainingType_name": item["trainingType"]["name"],
+            "absent_on": item["absent_on"],
+            "absent_off": item["absent_off"],
+        }
+        result.append(mapped)
+
+    return result
+
+async def save_attendance_to_db(
+    db: AsyncSession, user_attendance: list[Dict[str, Any]], user_id: int
+):
+    try:
+        existing = await db.execute(
+            select(UserAttendance).where(UserAttendance.user_id == user_id)
+        )
+        existing = existing.scalars().all()
+
+        existing_keys = {
+            (item.subject_name, item.semester_name, item.trainingType_name)
+            for item in existing
+        }
+
+        db_items = []
+        for item in user_attendance:
+            key = (item["subject_name"], item["semester_name"], item["trainingType_name"])
+            if key not in existing_keys:
+                db_items.append(
+                    UserAttendance(
+                        user_id=user_id,
+                        subject_name=item["subject_name"],
+                        semester_name=item["semester_name"],
+                        trainingType_name=item["trainingType_name"],
+                        absent_on=item["absent_on"],
+                        absent_off=item["absent_off"],
+                    )
+                )
+
+        if db_items:
+            db.add_all(db_items)
+            await db.commit()
+
+            for item in db_items:
+                await db.refresh(item)
+
+    except Exception as e:
+        await db.rollback()
+        raise Exception(f"Failed to save attendance: {str(e)}")
 
 async def save_user_data_to_db(db: AsyncSession, user_data: dict):
     result = await get_user(db=db, username=user_data["student_id_number"])

@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Depends , BackgroundTasks
+from fastapi import APIRouter, Depends 
 from fastapi.security import OAuth2PasswordRequestForm
 from src.utils.auth import ( 
     authenticate_admin, 
@@ -13,7 +13,10 @@ from src.utils.auth import (
     fetch_subject,
     save_user_subject_to_db,
     save_user_gpa_to_db,
-    map_subject_grades
+    map_subject_grades,
+    # fetch_attendance,
+    # map_attendance_records,
+    # save_attendance_to_db,
 )
 from src.core.config import settings
 from src.models.user import User
@@ -80,16 +83,25 @@ async def login(
 
 
         subject_data = []
+        attendance_data = []
         for i in range(11, semester_number + 1):
             user_subjects = await fetch_subject(token=token, semester=i)
             user_subjects = map_subject_grades(api_data=user_subjects)
             subject_data.extend(user_subjects)
 
-        # user_id ni uzatish
+            # user_attendance = await fetch_attendance(token=token , semester_code=i)
+            # user_attendance = map_attendance_records(api_data=user_attendance)
+            # attendance_data.extend(user_attendance)
+
+
+        
         await save_user_subject_to_db(
             db=db, user_id=user_id, user_subjects=subject_data
         )
 
+        # await save_attendance_to_db(
+        #     db=db , user_id=user_id , user_attendance=attendance_data
+        # )
 
         return {
             "access_token": access_token,

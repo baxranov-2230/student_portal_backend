@@ -15,7 +15,7 @@ async def generic_search(
     last_name: Optional[str] = Query(None, description="Last name to search"),
     first_name: Optional[str] = Query(None, description="First name to search"),
     student_id_number: Optional[str] = Query(None, description="Student ID number"),
-    faculty: Optional[str] = Query(None, description="Faculty"),
+    specialty: Optional[str] = Query(None, description="Specialty"),
     limit: int = Query(10, ge=1, le=100, description="Max number of results to return"),
     offset: int = Query(0, ge=0, description="Number of results to skip"),
     db: AsyncSession = Depends(get_db),
@@ -25,7 +25,7 @@ async def generic_search(
         "last_name": last_name,
         "first_name": first_name,
         "student_id_number": student_id_number,
-        "faculty": faculty,
+        "specialty": specialty,
     }
 
     filters = []
