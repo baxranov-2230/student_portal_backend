@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query 
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy.future import select 
 from src.models.application import Application
 from src.utils.auth import RoleChecker
 from src.core.base import get_db
 from src.schemas.application import ApplicationResponse
 from typing import List
 from src.models import User
+from sqlalchemy.orm import joinedload
+from sqlalchemy import and_
+
 from fastapi.responses import FileResponse
 import os
 
@@ -15,9 +19,11 @@ import os
  
 
 # Router setup
-get_router = APIRouter(prefix="/applications")
+application_router = APIRouter(
+    prefix="/applications"
+    )
 
-@get_router.get("/get_by_id/{application_id}", response_model=ApplicationResponse)
+@application_router.get("/get_by_id/{application_id}", response_model=ApplicationResponse)
 async def get_application_by_id(
     application_id: int,
     current_user: dict = Depends(RoleChecker("admin")),
@@ -42,7 +48,7 @@ async def get_application_by_id(
 
     return application
 
-@get_router.get("/get_all", response_model=List[ApplicationResponse])
+@application_router.get("/get_all", response_model=List[ApplicationResponse])
 async def get_all_applications(
     min_gpa: float = Query(None, ge=0.0, le=5.0),
     limit: int = Query(25, ge=1, le=100),
@@ -78,7 +84,7 @@ async def get_all_applications(
     return applications
 
 
-@get_router.get("/download/{application_id}")
+@application_router.get("/download/{application_id}")
 async def download_application_pdf(
     application_id: int,
     current_user: User = Depends(RoleChecker("admin")),
@@ -113,3 +119,52 @@ async def download_application_pdf(
         media_type="application/pdf",
         filename=os.path.basename(application.filepath)
     )
+
+
+@application_router.get("/search")
+async def generic_search(
+    full_name: Optional[str] = None,
+    student_id_number: Optional[str] = Query(None, description="Student ID number"),
+    faculty: Optional[str] = Query(None, description="Faculty name"),
+    group: Optional[str] = Query(None, description="Student group"),
+    specialty: Optional[str] = Query(None, description="Specialty from user model"),
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(RoleChecker("admin")),
+):
+    filters = []
+
+    # Filter Application fields
+    if full_name:
+        filters.append(Application.full_name.ilike(f"%{full_name}%"))
+    if student_id_number:
+        filters.append(Application.student_id_number.ilike(f"%{student_id_number}%"))
+    if faculty:
+        filters.append(Application.faculty.ilike(f"%{faculty}%"))
+    if group:
+        filters.append(Application.group.ilike(f"%{group}%"))
+
+    # Filter by User.specialty
+    if specialty:
+        filters.append(User.specialty.ilike(f"%{specialty}%"))
+
+    if not filters:
+        raise HTTPException(status_code=400, detail="At least one search parameter is required")
+
+    stmt = (
+        select(Application)
+        .join(User, Application.user_id == User.id)
+        .options(joinedload(Application.user))  # optional: eager load user if needed
+        .where(and_(*filters))
+        .offset(offset)
+        .limit(limit)
+    )
+
+    result = await db.execute(stmt)
+    applications = result.scalars().all()
+
+    if not applications:
+        raise HTTPException(status_code=404, detail="No applications found")
+
+    return applications
