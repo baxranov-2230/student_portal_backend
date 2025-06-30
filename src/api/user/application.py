@@ -231,40 +231,4 @@ async def get_all_applications(
 
 
 
-@application_router.delete("/{application_id}", response_model=ApplicationDeleteResponse)
-async def delete_application(
-    application_id: int,
-    current_user: User = Depends(RoleChecker("student")),
-    db: AsyncSession = Depends(get_db)
-):
-    """Autentifikatsiya qilingan talaba uchun ariza ID bo'yicha o'chirish."""
-    if application_id <= 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Ariza ID musbat butun son bo'lishi kerak"
-        )
 
-    stmt = select(Application).where(
-        Application.id == application_id,
-        Application.user_id == current_user.id
-    )
-    result = await db.execute(stmt)
-    application = result.scalars().first()
-
-    if not application:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Ariza topilmadi"
-        )
-
-    try:
-        await db.delete(application)
-        await db.commit()
-    except Exception:
-        await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Ariza o'chirishda xatolik yuz berdi"
-        )
-
-    return {"message": "Ariza muvaffaqiyatli o'chirildi"}
