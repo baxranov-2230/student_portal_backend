@@ -53,8 +53,8 @@ async def count_get(
     return {
         "specialty": specialty_name or "All specialties",
         "total_applications": all_count,
-        "gpa_fit_applications (>=3.5)": high_count,
-        "gpa_not_fit_applications (<3.5)": low_count
+        "gpa_fit_applications": high_count,
+        "gpa_not_fit_applications": low_count
     }
 
     
