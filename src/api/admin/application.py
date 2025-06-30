@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query 
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select 
+from sqlalchemy.future import select
 from src.models.application import Application
 from src.utils.auth import RoleChecker
 from src.core.base import get_db
@@ -16,7 +16,7 @@ import os
 
 
 
- 
+
 
 # Router setup
 application_router = APIRouter(
@@ -53,6 +53,7 @@ async def get_application_by_id(
 @application_router.get("/get_all", response_model=List[ApplicationResponse])
 async def get_all_applications(
     min_gpa: float = Query(None, ge=0.0, le=5.0),
+    max_gpa: float = Query(None, ge=0.0, le=5.0),
     limit: int = Query(25, ge=1, le=100),
     offset: int = Query(0, ge=0),
     current_user: dict = Depends(RoleChecker("admin")),
@@ -64,6 +65,9 @@ async def get_all_applications(
     # Apply GPA filter if provided
     if min_gpa is not None:
         stmt = stmt.where(Application.gpa >= min_gpa)
+
+    if max_gpa is not None:
+        stmt = stmt.filter(Application.gpa < max_gpa)
 
     # Order by GPA descending (high to low)
     stmt = stmt.order_by(desc(Application.gpa))
