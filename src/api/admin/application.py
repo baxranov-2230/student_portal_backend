@@ -9,7 +9,7 @@ from src.schemas.application import ApplicationResponse
 from typing import List
 from src.models import User
 from sqlalchemy.orm import joinedload
-from sqlalchemy import and_
+from sqlalchemy import and_ , desc
 
 from fastapi.responses import FileResponse
 import os
@@ -48,6 +48,8 @@ async def get_application_by_id(
 
     return application
 
+
+
 @application_router.get("/get_all", response_model=List[ApplicationResponse])
 async def get_all_applications(
     min_gpa: float = Query(None, ge=0.0, le=5.0),
@@ -56,12 +58,15 @@ async def get_all_applications(
     current_user: dict = Depends(RoleChecker("admin")),
     db: AsyncSession = Depends(get_db),
 ):
-    """Retrieve all applications with optional GPA filtering and pagination for admin users."""
+    """Retrieve all applications with optional GPA filtering, ordered by GPA descending, and pagination."""
     stmt = select(Application)
 
     # Apply GPA filter if provided
     if min_gpa is not None:
         stmt = stmt.where(Application.gpa >= min_gpa)
+
+    # Order by GPA descending (high to low)
+    stmt = stmt.order_by(desc(Application.gpa))
 
     # Apply pagination
     stmt = stmt.offset(offset).limit(limit)
@@ -82,6 +87,7 @@ async def get_all_applications(
         )
 
     return applications
+
 
 
 @application_router.get("/download/{application_id}")
