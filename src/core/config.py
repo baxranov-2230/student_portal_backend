@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     HEMIS_USER : str
     HEMIS_USER_GPA : str
     HEMIS_USER_SUBJECT: str
-    HEMIS_USER_ATTENDANCE: str
+    # HEMIS_USER_ATTENDANCE: str
 
     @property
     def connection_string(self):
