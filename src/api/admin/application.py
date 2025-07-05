@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query 
+from fastapi.responses import StreamingResponse
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -9,11 +10,12 @@ from src.schemas.application import ApplicationResponse
 from typing import List
 from src.models import User
 from sqlalchemy.orm import joinedload
-from sqlalchemy import and_ , desc
-
+from sqlalchemy import and_ , desc 
+from sqlalchemy.orm import selectinload
 from fastapi.responses import FileResponse
 import os
-
+from io import BytesIO
+from openpyxl import Workbook
 
 
 
@@ -217,3 +219,60 @@ async def delete_application(
         )
 
     return {"message": "Ariza muvaffaqiyatli o'chirildi"}
+
+
+@application_router.post('/download')
+async def download_user_info(
+    current_user: User = Depends(RoleChecker("admin")),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = (
+        select(Application)
+        .options(selectinload(Application.user))  # Make sure Application.user exists as relationship
+    )
+    result = await db.execute(stmt)
+    applications = result.scalars().all()
+
+    # Create Excel workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Applications"
+
+    # Write header row
+    ws.append([
+        "Application ID",
+        "Full Name",
+        "Group",
+        "Specialty",
+        "GPA",
+        "Student ID Number"
+    ])
+
+    # Write data rows
+    for app in applications:
+        user = app.user
+        if user:
+            ws.append([
+                app.id,
+                user.full_name,
+                user.group,
+                user.specialty,
+                app.gpa,
+                user.student_id_number
+            ])
+
+    # Save to memory
+    file_stream = BytesIO()
+    wb.save(file_stream)
+    file_stream.seek(0)
+
+    # Return Excel file as download
+    return StreamingResponse(
+        file_stream,
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={
+            "Content-Disposition": "attachment; filename=all_applications.xlsx"
+        }
+    )
+
+
