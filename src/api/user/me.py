@@ -57,21 +57,21 @@ async def get_info(
             "phone": user.phone,
             "paymentForm": user.paymentForm,
             "first_name": user.first_name,
-            "group": user.group, -
+            "group": user.group,
             "passport_pin": user.passport_pin,
             "passport_number": user.passport_number,
             "third_name": user.third_name,
-            "student_id_number": user.student_id_number, -
+            "student_id_number": user.student_id_number,
             "gender": user.gender,
             "educationLang": user.educationLang,
-            "full_name": user.full_name, - 
+            "full_name": user.full_name,
             "image_path": user.image_path,
             "university": user.university,
             "faculty": user.faculty,
             "birth_date": user.birth_date,
-            "specialty": user.specialty, -
+            "specialty": user.specialty,
             "level": user.level,
-            "gpa" : user_gpa.gpa, -
+            "gpa" : user_gpa.gpa, 
             "subjects": [
                 {
                     "subject": user_subject.subject_name,
