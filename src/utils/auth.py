@@ -16,17 +16,13 @@ from typing import Callable
 from fastapi import Depends
 from src.core.base import get_db
 from src.models.user_attendance import UserAttendance
-from sqlalchemy.exc import SQLAlchemyError
+
 
 
 
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="auth/login",
-    scopes={
-        "admin": "make every thing",
-        "student": "you are student"
-    }
 )
 
 
