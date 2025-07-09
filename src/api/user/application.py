@@ -9,7 +9,7 @@ from src.models.user_gpa import UserGpa
 from src.utils.auth import RoleChecker
 from src.core.base import get_db
 from typing import List
-from src.schemas.application import ApplicationCreateResponse , ApplicationDeleteResponse
+from src.schemas.application import ApplicationCreateResponse 
 import os
 from src.utils.pdf_generator import generate_acceptance_pdf , generate_rejection_pdf ,  generate_application_pdf , generate_filename
 
@@ -175,7 +175,7 @@ async def download_application_pdf(
 
 
 @application_router.get("/download/response/{application_id}")
-async def download_application_pdf(
+async def download_application_pdf( 
     application_id: int,
     current_user: User = Depends(RoleChecker("student")),
     db: AsyncSession = Depends(get_db)

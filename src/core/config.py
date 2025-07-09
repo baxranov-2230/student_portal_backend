@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings , SettingsConfigDict
+from pydantic_settings import BaseSettings 
 from dotenv import load_dotenv
 
 
@@ -33,6 +33,9 @@ class Settings(BaseSettings):
                 f'{values["DB_PASSWORD"]}@'
                 f'{values["DB_HOST"]}:{values["DB_PORT"]}/'
                 f'{values["DB_NAME"]}')
+        
+        
+        
 
 
 settings = Settings()

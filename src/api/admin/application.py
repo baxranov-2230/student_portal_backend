@@ -228,7 +228,7 @@ async def download_user_info(
 ):
     stmt = (
         select(Application)
-        .options(selectinload(Application.user))  # Make sure Application.user exists as relationship
+        .options(selectinload(Application.user))  # Ensure Application has a `user` relationship
     )
     result = await db.execute(stmt)
     applications = result.scalars().all()
@@ -245,7 +245,9 @@ async def download_user_info(
         "Group",
         "Specialty",
         "GPA",
-        "Student ID Number"
+        "Student ID Number",
+        "Education Type",
+        "Date"
     ])
 
     # Write data rows
@@ -258,7 +260,9 @@ async def download_user_info(
                 user.group,
                 user.specialty,
                 app.gpa,
-                user.student_id_number
+                user.student_id_number,
+                user.education_type,
+                app.create_date  
             ])
 
     # Save to memory
@@ -266,13 +270,11 @@ async def download_user_info(
     wb.save(file_stream)
     file_stream.seek(0)
 
-    # Return Excel file as download
+    # Return Excel file
     return StreamingResponse(
         file_stream,
         media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        headers={
-            "Content-Disposition": "attachment; filename=all_applications.xlsx"
-        }
+        headers={"Content-Disposition": "attachment; filename=all_applications.xlsx"}
     )
 
 
