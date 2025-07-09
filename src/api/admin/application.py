@@ -261,7 +261,7 @@ async def download_user_info(
                 user.specialty,
                 app.gpa,
                 user.student_id_number,
-                user.education_type,
+                user.educationType,
                 app.create_date  
             ])
 

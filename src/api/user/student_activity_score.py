@@ -28,7 +28,7 @@ async def create_student_activity_scores(
     cultural_visits: UploadFile = File(None),
     healthy_lifestyle: UploadFile = File(None),
     other_spiritual_activity: UploadFile = File(None),
-    current_user: User = Depends(RoleChecker("admin")),
+    current_user: User = Depends(RoleChecker("student")),
     db: AsyncSession = Depends(get_db)
 ):
     stmt = select(StudentActivityScore).where(StudentActivityScore.user_id == current_user.id)
@@ -67,7 +67,7 @@ async def create_student_activity_scores(
 @student_activity_scores_router.get("/get_by_id/{student_activity_score_id}")
 async def get_student_activity_score_by_id(
     student_activity_score_id: int,
-    current_user: User = Depends(RoleChecker("admin")),
+    current_user: User = Depends(RoleChecker("student")),
     db: AsyncSession = Depends(get_db)
 ):
     stmt = select(StudentActivityScore).where(
@@ -89,7 +89,7 @@ async def get_student_activity_score_by_id(
 # GET ALL
 @student_activity_scores_router.get("/get_all")
 async def get_all_student_activity_scores(
-    current_user: User = Depends(RoleChecker("admin")),
+    current_user: User = Depends(RoleChecker("student")),
     db: AsyncSession = Depends(get_db)
 ):
     stmt = select(StudentActivityScore).where(StudentActivityScore.user_id == current_user.id)
@@ -112,7 +112,7 @@ async def update_student_activity_score(
     cultural_visits: UploadFile = File(None),
     healthy_lifestyle: UploadFile = File(None),
     other_spiritual_activity: UploadFile = File(None),
-    current_user: User = Depends(RoleChecker("admin")),
+    current_user: User = Depends(RoleChecker("student")),
     db: AsyncSession = Depends(get_db),
 ):
     try:
@@ -165,7 +165,7 @@ async def update_student_activity_score(
 @student_activity_scores_router.delete("/delete/{student_activity_score_id}")
 async def delete_student_activity_score(
     student_activity_score_id: int,
-    current_user: User = Depends(RoleChecker("admin")),
+    current_user: User = Depends(RoleChecker("student")),
     db: AsyncSession = Depends(get_db),
 ):
     try:
