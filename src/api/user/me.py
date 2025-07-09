@@ -69,7 +69,7 @@ async def get_info(
             "university": user.university,
             "faculty": user.faculty,
             "birth_date": user.birth_date,
-            "specialty": user.specialty, 
+            "specialty": user.specialty,
             "level": user.level,
             "gpa" : user_gpa.gpa, 
             "subjects": [
