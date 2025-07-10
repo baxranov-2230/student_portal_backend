@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
@@ -17,7 +17,7 @@ async def get_path(file: UploadFile):
 # CREATE
 @student_activity_scores_router.post("/create")
 async def create_student_activity_scores(
-    academic_performance: str,
+    academic_performance: str = Form(...),
     reading_culture: UploadFile = File(None),
     five_initiatives: UploadFile = File(None),
     discipline_compliance: UploadFile = File(None),
@@ -38,7 +38,7 @@ async def create_student_activity_scores(
     if existing:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Bu ma'lumot allaqachon yaratilgan"
+            detail="Siz allaqchon ariza yuborgansiz!! Boshqa ma'lumot qo'shish uchun o'zgartirish qilib qo'shing "
         )
 
     new_score = StudentActivityScore(
