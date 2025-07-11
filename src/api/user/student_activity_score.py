@@ -194,3 +194,5 @@ async def delete_student_activity_score(
             detail="O'chirishda xatolik yuz berdi"
         )
 
+
+
