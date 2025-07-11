@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File , Form
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
@@ -193,3 +193,4 @@ async def delete_student_activity_score(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="O'chirishda xatolik yuz berdi"
         )
+
