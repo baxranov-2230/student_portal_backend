@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
-from src.schemas.student_activity_scores import StudentActivityScoreUpdate
 from src.utils.auth import RoleChecker
 from src.utils.file_work import save_uploaded_file
-from src.models import User, StudentActivityScore
+from src.models import User, StudentActivityScore 
 from src.core.base import get_db
+
 
 student_activity_scores_router = APIRouter(prefix="/student_activity_scores")
 
@@ -193,71 +193,6 @@ async def delete_student_activity_score(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="O'chirishda xatolik yuz berdi"
         )
-
-
-
-@student_activity_scores_router.patch("/give_grade/{student_activity_score_id}")
-async def give_grade(
-    student_activity_score_id: int,
-    grade_data: StudentActivityScoreUpdate,
-    _: User = Depends(RoleChecker("admin")),
-    db: AsyncSession = Depends(get_db)
-):
-    stmt = select(StudentActivityScore).where(StudentActivityScore.id == student_activity_score_id)
-    result = await db.execute(stmt)
-    activity_score = result.scalars().first()
-
-    if not activity_score:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"StudentActivityScore with ID {student_activity_score_id} not found"
-        )
-
-    # Update only fields that are not None
-    for field, value in grade_data.model_dump(exclude_unset=True).items():
-        setattr(activity_score, field, value)
-
-    try:
-        await db.commit()
-        await db.refresh(activity_score)
-    except Exception as e:
-        await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update grade: {str(e)}"
-        )
-
-    return activity_score
-
-
-@student_activity_scores_router.get("/get_by_id/{student_activity_score_id}")
-async def get_activity_by_id(
-    student_activity_score_id: int,
-    _: User = Depends(RoleChecker("admin")),
-    db: AsyncSession = Depends(get_db)
-):
-    stmt = select(StudentActivityScore).where(StudentActivityScore.id == student_activity_score_id)
-    result = await db.execute(stmt)
-    user_data = result.scalars().first()
-    
-    if not user_data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity score not found")
-    
-    return user_data
-
-@student_activity_scores_router.get("/get_all")
-async def get_all_activity_scores(
-    _: User = Depends(RoleChecker("admin")),
-    db: AsyncSession = Depends(get_db)
-):
-    stmt = select(StudentActivityScore)
-    result = await db.execute(stmt)
-    all_data = result.scalars().all()
-    
-    return all_data
-
-
-
 
 
 

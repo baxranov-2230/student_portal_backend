@@ -1,73 +1,134 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
-from src.schemas.student_activity_scores import StudentActivityScoreUpdate
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.schemas.student_activity_scores import StudentActivityScoreUpdate
 from src.utils.auth import RoleChecker
-from src.models import User, StudentActivityScore
+from src.models import User, StudentActivityScore 
 from src.core.base import get_db
-from sqlalchemy.exc import SQLAlchemyError
+from openpyxl import Workbook
+from fastapi.responses import StreamingResponse
+from io import BytesIO
+
 
 student_activity_scores_router = APIRouter(prefix="/student_activity_scores")
 
-
-@student_activity_scores_router.post("/create", status_code=status.HTTP_200_OK)
-async def create_or_update_student_activity_scores(
-    student_activity: StudentActivityScoreUpdate,
-    current_user: User = Depends(RoleChecker("admin")),
+@student_activity_scores_router.patch("/give_grade/{student_activity_score_id}")
+async def give_grade(
+    student_activity_score_id: int,
+    grade_data: StudentActivityScoreUpdate,
+    _: User = Depends(RoleChecker("admin")),
     db: AsyncSession = Depends(get_db)
 ):
+    stmt = select(StudentActivityScore).where(StudentActivityScore.id == student_activity_score_id)
+    result = await db.execute(stmt)
+    activity_score = result.scalars().first()
+
+    if not activity_score:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"StudentActivityScore with ID {student_activity_score_id} not found"
+        )
+
+    # Update only fields that are not None
+    for field, value in grade_data.model_dump(exclude_unset=True).items():
+        setattr(activity_score, field, value)
+
     try:
-        # Check if score already exists for this student
-        stmt = select(StudentActivityScore).where(StudentActivityScore.user_id == student_activity.student_id)
-        result = await db.execute(stmt)
-        existing_score = result.scalar_one_or_none()
-
-        if existing_score:
-            # Update existing record
-            for field, value in student_activity.model_dump(exclude_unset=True).items():
-                setattr(existing_score, field, value)
-            await db.commit()
-            await db.refresh(existing_score)
-            return {"detail": "Student activity score updated", "data": existing_score}
-
-    except SQLAlchemyError as e:
+        await db.commit()
+        await db.refresh(activity_score)
+    except Exception as e:
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update grade: {str(e)}"
+        )
+
+    return activity_score
 
 
 @student_activity_scores_router.get("/get_by_id/{student_activity_score_id}")
-async def get_student_activity_score_by_id(
+async def get_activity_by_id(
     student_activity_score_id: int,
-    current_user: User = Depends(RoleChecker("admin")),
+    _: User = Depends(RoleChecker("admin")),
     db: AsyncSession = Depends(get_db)
 ):
-    return 
-
-
+    stmt = select(StudentActivityScore).where(StudentActivityScore.id == student_activity_score_id)
+    result = await db.execute(stmt)
+    user_data = result.scalars().first()
+    
+    if not user_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity score not found")
+    
+    return user_data
 
 @student_activity_scores_router.get("/get_all")
-async def get_all_student_activity_scores(
+async def get_all_activity_scores(
+    _: User = Depends(RoleChecker("admin")),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = select(StudentActivityScore)
+    result = await db.execute(stmt)
+    all_data = result.scalars().all()
+    
+    return all_data
+
+
+@student_activity_scores_router.get("/download_excel/")
+async def download_user_info(
     current_user: User = Depends(RoleChecker("admin")),
     db: AsyncSession = Depends(get_db)
 ):
-    return 
+    stmt = (
+        select(StudentActivityScore)
+        .options(
+            selectinload(StudentActivityScore.user)
+            .selectinload(User.application)  # nested loading
+        )
+    )
+    result = await db.execute(stmt)
+    activity_scores = result.scalars().all()
 
+    # Create Excel workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Student Activity Scores"
 
+    # Write header row
+    ws.append([
+        "Score ID",
+        "Full Name",
+        "Group",
+        "Specialty",
+        "GPA",
+        "Student ID Number",
+        "Education Type",
+    ])
 
-@student_activity_scores_router.put("/update/{student_activity_score_id}")
-async def update_student_activity_score(
-    current_user: User = Depends(RoleChecker("admin")),
-    db: AsyncSession = Depends(get_db),
-):
-    return
- 
+    # Write data rows
+    for score in activity_scores:
+        user = score.user
+        application = user.application if user else None
+        if user and application:
+            ws.append([
+                score.id,
+                user.full_name,
+                user.group,
+                user.specialty,
+                application.gpa,
+                user.student_id_number,
+                user.education_type,
+            ])
 
+    # Save to memory
+    file_stream = BytesIO()
+    wb.save(file_stream)
+    file_stream.seek(0)
 
+    # Return Excel file
+    return StreamingResponse(
+        file_stream,
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={"Content-Disposition": "attachment; filename=student_activity_scores.xlsx"}
+    )
 
-@student_activity_scores_router.delete("/delete/{student_activity_score_id}")
-async def delete_student_activity_score(
-    student_activity_score_id: int,
-    current_user: User = Depends(RoleChecker("admin")),
-    db: AsyncSession = Depends(get_db),
-):
-    return
