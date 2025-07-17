@@ -1,6 +1,9 @@
 from pydantic import BaseModel
 
 
+
+
+
 class StudentActivityScoreUpdate(BaseModel):
     reading_culture : str | None = None
     five_initiatives : str | None = None
