@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 class StudentActivityScoreUpdate(BaseModel):
     reading_culture : int | None = None
+    academic_performance: int | None = None
     five_initiatives : int | None = None
     discipline_compliance : int | None = None
     competition_achievements : int | None = None
@@ -20,17 +21,17 @@ class StudentActivityScoreUpdate(BaseModel):
 
 
 class StudentActivityScoreCreate(BaseModel):
-    reading_culture: str = "0"
-    five_initiatives: str = "0"
-    academic_performance: str = "0"
-    discipline_compliance: str = "0"
-    competition_achievements: str = "0"
-    attendance_punctuality: str = "0"
-    enlightenment_lessons: str = "0"
-    volunteering: str = "0"
-    cultural_visits: str = "0"
-    healthy_lifestyle: str = "0"
-    other_spiritual_activity: str = "0"
+    reading_culture: int  = 0
+    five_initiatives: int  = 0
+    academic_performance: int  = 0
+    discipline_compliance: int  = 0
+    competition_achievements: int  = 0
+    attendance_punctuality: int  = 0
+    enlightenment_lessons: int  = 0
+    volunteering: int  = 0
+    cultural_visits: int  = 0
+    healthy_lifestyle: int  = 0
+    other_spiritual_activity: int  = 0
 
 class StudentActivityScoreResponse(StudentActivityScoreCreate):
     id: int

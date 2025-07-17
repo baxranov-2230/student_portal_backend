@@ -10,7 +10,7 @@ class StudentActivityScore(Base):
 
     reading_culture = Column(Integer, default=0)
     five_initiatives = Column(Integer, default=0)
-    academic_performance = Column(String, default="0")
+    academic_performance = Column(Integer, default=0)
     discipline_compliance = Column(Integer, default=0)
     competition_achievements = Column(Integer, default=0)
     attendance_punctuality = Column(Integer, default=0)
