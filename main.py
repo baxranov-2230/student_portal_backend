@@ -23,9 +23,7 @@ app.add_middleware(
         # "http://localhost:5177",
         # "https://new.nsumt.uz",
     ],  # Разрешаем доступ с вашего фронтенда
-    # allow_credentials=True,
-    # allow_methods=["*"],  # Разрешаем все HTTP методы
-    # allow_headers=["*"],  # Разрешаем все заголовки
+
 )
 
 
