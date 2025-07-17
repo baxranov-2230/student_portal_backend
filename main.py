@@ -16,7 +16,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
     allow_origins=[
-        "http://grant.nsumt.uz",
+        "http://www.grant.nsumt.uz",
         "https://grant.nsumt.uz",
         "http://localhost:5173",
         # "http://localhost:5174",
