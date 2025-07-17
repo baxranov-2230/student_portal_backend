@@ -115,9 +115,9 @@ async def download_user_info(
                 user.full_name,
                 user.group,
                 user.specialty,
-                application.gpa,
+                application[0].gpa,
                 user.student_id_number,
-                user.education_type,
+                user.educationType,
             ])
 
     # Save to memory
