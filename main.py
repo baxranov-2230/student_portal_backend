@@ -17,12 +17,11 @@ app.add_middleware(
     allow_headers=["*"],
     allow_origins=[
         "http://www.grant.nsumt.uz",
+        "https://www.grant.nsumt.uz",
         "https://grant.nsumt.uz",
         "http://localhost:5173",
-        # "http://localhost:5174",
-        # "http://localhost:5177",
-        # "https://new.nsumt.uz",
-    ],  # Разрешаем доступ с вашего фронтенда
+        "http://localhost:5174",
+    ], 
 
 )
 
