@@ -14,6 +14,7 @@ class ApplicationCreateResponse(BaseModel):
     gpa: float
     filepath: Optional[str] = None
     create_date: datetime
+    grade: int
     reponse_file: Optional[str] = None
 
 
@@ -30,6 +31,7 @@ class ApplicationResponse(BaseModel):
     group: str
     faculty: str
     gpa: float
+    grade: int
     filepath: Optional[str] = None
     create_date: datetime
     reponse_file: Optional[str] = None

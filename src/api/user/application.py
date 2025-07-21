@@ -1,17 +1,17 @@
-from datetime import datetime
+# from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.models.application import Application
 from src.models.user import User
-from src.models.user_gpa import UserGpa
+# from src.models.user_gpa import UserGpa
 from src.utils.auth import RoleChecker
 from src.core.base import get_db
-from typing import List
+
 from src.schemas.application import ApplicationCreateResponse 
 import os
-from src.utils.pdf_generator import generate_acceptance_pdf , generate_rejection_pdf ,  generate_application_pdf , generate_filename
+# from src.utils.pdf_generator import generate_acceptance_pdf , generate_rejection_pdf ,  generate_application_pdf , generate_filename
 
 application_router = APIRouter(prefix="/application")
 
@@ -175,7 +175,7 @@ async def download_application_pdf(
 
 
 
-@application_router.get("/get_all", response_model=List[ApplicationCreateResponse])
+@application_router.get("/get_all", response_model=list[ApplicationCreateResponse])
 async def get_all_applications(
     current_user: User = Depends(RoleChecker("student")),
     db: AsyncSession = Depends(get_db)

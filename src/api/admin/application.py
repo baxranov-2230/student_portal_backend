@@ -278,3 +278,24 @@ async def download_user_info(
     )
 
 
+
+@application_router.post("/grade/{user_id}")
+async def user_grade(
+    user_id: int,
+    grade: int,
+    _ : User = Depends(RoleChecker("admin")),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = select(Application).where(Application.user_id == user_id)
+    result = await db.execute(stmt)
+    application_data = result.scalars().first()
+
+    if not application_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
+
+    application_data.grade = grade
+
+    await db.commit()  
+    await db.refresh(application_data)
+
+    return application_data
