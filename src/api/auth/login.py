@@ -18,6 +18,7 @@ from src.utils.auth import (
     # map_attendance_records,
     # save_attendance_to_db,
 )
+from src.utils.update_user_gpa import user_gpa_update
 from src.core.config import settings
 from src.models.user import User
 from datetime import timedelta
@@ -80,10 +81,16 @@ async def login(
 
         user_gpa_list = map_user_gpa(user_gpa)  # returns list of dicts
         await save_user_gpa_to_db(db=db, user_id=user_id, user_gpa_list=user_gpa_list)
+        
+        await user_gpa_update(db=db, user_id=user_id , token=token)
+        print("User GPA updated successfully")
+        
+        
+        
 
 
         subject_data = []
-        attendance_data = []
+        # attendance_data = []
         for i in range(11, semester_number + 1):
             user_subjects = await fetch_subject(token=token, semester=i)
             user_subjects = map_subject_grades(api_data=user_subjects)
