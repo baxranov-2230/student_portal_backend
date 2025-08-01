@@ -1,4 +1,4 @@
-from weasyprint import HTML, CSS
+from weasyprint import HTML
 from datetime import datetime
 import os
 import uuid
@@ -54,7 +54,7 @@ def generate_application_pdf(filepath, user, gpa):
         <div class="title">Ariza</div>
 
         <div class="content" style="text-indent: 40px">
-        Men {user.full_name} {user.faculty} fakultetining {user.level} {user.educationType} {user.group} guruhida tahsil olaman. 2024-2025 o‘quv yili uchun GPA ko‘rsatkichim {gpa}.
+        Men {user.full_name} {user.faculty} fakultetining {user.level} {user.education_type} {user.group} guruhida tahsil olaman. 2024-2025 o‘quv yili uchun GPA ko‘rsatkichim {gpa}.
             
             Menga 2025-2026 o‘quv yili uchun Oʻzbekiston Respublikasi Vazirlar Mahkamasining “Oliy taʼlim tashkilotlarida talabalarga grantlarni taqdim etish va qayta taqsimlash tartibi toʻgʻrisidagi nizomni tasdiqlash haqida” 2025-yil 10-martdagi 149-sonli qarori bilan tasdiqlangan Nizomga muvofiq ta’lim grantiga talabgor sifatida ishtirok etishga ruxsat berishingizni so‘rayman.
         </div>

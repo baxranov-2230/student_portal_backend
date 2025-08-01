@@ -1,4 +1,4 @@
-from sqlalchemy import Column , String , Integer , Float , ForeignKey , DateTime
+from sqlalchemy import Column , String , Integer , Float , ForeignKey , DateTime , Boolean
 from sqlalchemy.orm import relationship
 from src.core.base import Base
 from datetime import datetime , timezone
@@ -18,6 +18,7 @@ class Application(Base):
     reponse_file = Column(String , nullable=True)
     grant_type = Column(String, nullable=True)
     grade = Column(Integer, nullable=True)
+    special_field = Column(Boolean , nullable=True , default=False)
     create_date = Column(DateTime , default=lambda: datetime.now(timezone.utc).replace( hour=0, minute=0, second=0, microsecond=0))
 
     user = relationship("User" , back_populates="application")

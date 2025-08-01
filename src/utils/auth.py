@@ -132,6 +132,8 @@ async def fetch_attendance(semester_code: int, token: str):
              
 
 def map_user_data(api_data: dict) -> dict:
+    print(api_data)
+    
     user_data = {
         "first_name": api_data.get("first_name"),
         "last_name": api_data.get("second_name"),
@@ -146,17 +148,18 @@ def map_user_data(api_data: dict) -> dict:
         "gender": api_data.get("gender", {}).get("name"),
         "university": api_data.get("university"),
         "specialty": api_data.get("specialty", {}).get("name"),
-        "studentStatus": api_data.get("studentStatus", {}).get("name"),
-        "educationForm": api_data.get("educationForm", {}).get("name"),
-        "educationType": api_data.get("educationType", {}).get("name"),
-        "paymentForm": api_data.get("paymentForm", {}).get("name"),
+        "student_status": api_data.get("studentStatus", {}).get("name"),
+        "education_form": api_data.get("educationForm", {}).get("name"),
+        "education_type": api_data.get("educationType", {}).get("name"),
+        "payment_form": api_data.get("paymentForm", {}).get("name"),
         "group": api_data.get("group", {}).get("name"),
-        "educationLang": api_data.get("educationLang", {}).get("name"),
+        "education_lang": api_data.get("educationLang", {}).get("name"),
         "faculty": api_data.get("faculty", {}).get("name"),
         "level": api_data.get("level", {}).get("name"),
         "semester": api_data.get("semester", {}).get("name"),
         "address": api_data.get("address"),
     }
+
     if user_data["birth_date"]:
         try:
             user_data["birth_date"] = datetime.fromtimestamp(
@@ -165,9 +168,14 @@ def map_user_data(api_data: dict) -> dict:
         except (TypeError, ValueError):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="birth_date is missing in API response",
+                detail="birth_date is invalid in API response",
             )
-    missing_fields = [key for key, value in user_data.items() if value is None]
+
+    OPTIONAL_FIELDS = {"passport_pin", "passport_number"}
+    missing_fields = [
+        key for key, value in user_data.items()
+        if value is None and key not in OPTIONAL_FIELDS
+    ]
     if missing_fields:
         raise HTTPException(
             status_code=400,

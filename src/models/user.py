@@ -14,8 +14,8 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    last_name = Column(String, nullable=True) 
     first_name = Column(String, nullable=True) 
+    last_name = Column(String, nullable=True) 
     third_name = Column(String, nullable=True) 
     full_name = Column(String, nullable=True)
     student_id_number = Column(String, nullable=True) 
@@ -28,12 +28,12 @@ class User(Base):
     gender = Column(String, nullable=True)
     university = Column(String, nullable=True)
     specialty = Column(String, nullable=True)
-    studentStatus = Column(String, nullable=True)
-    educationForm = Column(String, nullable=True)
-    educationType = Column(String, nullable=True)
-    paymentForm = Column(String, nullable=True)
+    student_status = Column(String, nullable=True)
+    education_form = Column(String, nullable=True)     # changed
+    education_type = Column(String, nullable=True)     # changed
+    payment_form = Column(String, nullable=True)       # changed
     group = Column(String, nullable=True)
-    educationLang = Column(String, nullable=True)
+    education_lang = Column(String, nullable=True)     # changed
     faculty = Column(String, nullable=True) 
     level = Column(String, nullable=True)
     semester = Column(String, nullable=True)

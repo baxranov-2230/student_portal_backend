@@ -46,41 +46,47 @@ async def get_info(
         user_gpa = result_gpa.scalars().first()
 
 
-        return {
+        response_data = {
             "id": user.id,
-            "studentStatus": user.studentStatus,
+            "student_status": user.student_status,
             "semester": user.semester,
-            "educationForm": user.educationForm,
+            "education_form": user.education_form,
             "address": user.address,
-            "educationType": user.educationType,
+            "education_type": user.education_type,
             "last_name": user.last_name,
             "phone": user.phone,
-            "paymentForm": user.paymentForm,
+            "payment_form": user.payment_form,
             "first_name": user.first_name,
-            "group": user.group, 
-            "passport_pin": user.passport_pin,
-            "passport_number": user.passport_number,
+            "group": user.group,
             "third_name": user.third_name,
-            "student_id_number": user.student_id_number, 
+            "student_id_number": user.student_id_number,
             "gender": user.gender,
-            "educationLang": user.educationLang,
-            "full_name": user.full_name, 
+            "education_lang": user.education_lang,
+            "full_name": user.full_name,
             "image_path": user.image_path,
             "university": user.university,
             "faculty": user.faculty,
             "birth_date": user.birth_date,
             "specialty": user.specialty,
             "level": user.level,
-            "gpa" : user_gpa.gpa, 
+            "gpa": user_gpa.gpa,
             "subjects": [
                 {
                     "subject": user_subject.subject_name,
-                    "gade": user_subject.grade,
+                    "grade": user_subject.grade,
                     "subjec_code": user_subject.semester_code,
                 }
                 for user_subject in user_subjects
             ],
         }
+
+        if user.passport_pin:
+            response_data["passport_pin"] = user.passport_pin
+
+        if user.passport_number:
+            response_data["passport_number"] = user.passport_number
+
+        return response_data
 
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as e:
         raise HTTPException(
