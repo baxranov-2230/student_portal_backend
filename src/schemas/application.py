@@ -32,6 +32,7 @@ class ApplicationResponse(BaseModel):
     faculty: str
     gpa: float
     # grade: int
+    special_field: bool
     filepath: Optional[str] = None
     create_date: datetime
     reponse_file: Optional[str] = None
