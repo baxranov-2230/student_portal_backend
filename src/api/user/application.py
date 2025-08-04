@@ -265,8 +265,8 @@ async def update_pdf(
         update(Application)
         .where(Application.user_id == user_gpa.id)
         .values(
-            filepath=base_filename,
-            reponse_file=response_filepath,
+            filepath=response_filepath,
+            reponse_file=base_filename,
             special_field = special_field
         )
     )
