@@ -15,4 +15,4 @@ class UserGpa(Base):
     credit_sum = Column(String, nullable=False)
     debt_subjects = Column(Integer, nullable=False)
 
-    user = relationship("User", back_populates="gpa")
+    # user = relationship("User", back_populates="gpa")

@@ -158,6 +158,7 @@ def map_user_data(api_data: dict) -> dict:
         "level": api_data.get("level", {}).get("name"),
         "semester": api_data.get("semester", {}).get("name"),
         "address": api_data.get("address"),
+        "gpa": str(api_data.get("avg_gpa"))
     }
 
     if user_data["birth_date"]:

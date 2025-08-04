@@ -8,11 +8,11 @@ from src.utils.auth import (
     map_user_data, 
     save_user_data_to_db,
     check_semester,
-    fetch_user_gpa,
-    map_user_gpa,
+    # fetch_user_gpa,
+    # map_user_gpa,   
     fetch_subject,
     save_user_subject_to_db,
-    save_user_gpa_to_db,
+    # save_user_gpa_to_db,
     map_subject_grades,
     # fetch_attendance,
     # map_attendance_records,
@@ -77,10 +77,10 @@ async def login(
             {"sub": user_data.student_id_number}, refresh_token_expire
         )
 
-        user_gpa = await fetch_user_gpa(token=token)
+        # user_gpa = await fetch_user_gpa(token=token)
 
-        user_gpa_list = map_user_gpa(user_gpa)  # returns list of dicts
-        await save_user_gpa_to_db(db=db, user_id=user_id, user_gpa_list=user_gpa_list)
+        # user_gpa_list = map_user_gpa(user_gpa)  # returns list of dicts
+        # await save_user_gpa_to_db(db=db, user_id=user_id, user_gpa_list=user_gpa_list)
         
         await user_gpa_update(db=db, user_id=user_id , token=token)
         print("User GPA updated successfully")

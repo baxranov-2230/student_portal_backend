@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from src.models import User, UserGpa
+from src.models import User
 from src.exception.base_exception import main_exeption , not_found
 from typing import TypeVar, Generic, List , Type
 from pydantic import BaseModel
@@ -80,11 +80,6 @@ async def get_by_field(db: AsyncSession, model, field_name: str, field_value: An
     scalars = await db.scalars(query)
     return scalars.first()
     
-
-async def get_by_id(db: AsyncSession, item_id: int):
-    stmst = select(UserGpa).where(UserGpa.user_id == item_id)
-    excute = await db.execute(stmst)
-    return excute.scalars().first()
 
 
 async def save_file(file: UploadFile) -> str:

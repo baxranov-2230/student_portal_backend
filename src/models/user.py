@@ -38,6 +38,7 @@ class User(Base):
     level = Column(String, nullable=True)
     semester = Column(String, nullable=True)
     address = Column(String, nullable=True)
+    gpa = Column(String , nullable=True)
     role = Column(SqlEnum(UserRole), default=UserRole.student)
 
     activity_score = relationship("StudentActivityScore", back_populates="user", uselist=False)
@@ -46,5 +47,5 @@ class User(Base):
     achievement = relationship("Achievement", back_populates="user")
     research = relationship("Research", back_populates="user")
     subject = relationship("UserSubject", back_populates="user")
-    gpa = relationship("UserGpa", back_populates="user", uselist=False)
+    # gpa = relationship("UserGpa", back_populates="user", uselist=False)
     application = relationship("Application" , back_populates="user")

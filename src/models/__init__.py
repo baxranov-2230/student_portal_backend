@@ -1,7 +1,7 @@
 __all__ = (
     "User",
     "UserRole",
-    "UserGpa",
+    # "UserGpa",
     "Achievement",
     "Cert",
     "Research",
@@ -12,7 +12,7 @@ __all__ = (
 
 
 from .user import User , UserRole
-from .user_gpa import UserGpa
+# from .user_gpa import UserGpa
 from .achievements import Achievement
 from .certs import Cert
 from .research import Research

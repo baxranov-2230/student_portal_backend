@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.models.application import Application
 from src.models.user import User
-from src.models.user_gpa import UserGpa
 from src.utils.auth import RoleChecker
 from src.core.base import get_db
 
@@ -31,9 +30,9 @@ async def create_application(
             detail="Siz allaqachon ariza topshirgansiz"
         )
     # Check for GPA data
-    stmt = select(UserGpa).where(
-        UserGpa.user_id == current_user.id,
-        # UserGpa.level == "1-kurs"
+    stmt = select(User).where(
+        User.id == current_user.id,
+        User.level == "1-kurs"
     )
     result = await db.execute(stmt)
     user_gpa = result.scalars().first()
@@ -45,18 +44,12 @@ async def create_application(
         )
 
     # Validate education year
-    try:
-        start_year = int(user_gpa.educationYear.split("-")[0])
-    except (ValueError, AttributeError):
+    
+    
+    if not  user_gpa.level == "1-kurs":
         raise HTTPException(
-            status_code=400,
-            detail="Ta'lim yili formati noto'g'ri"
-        )
-
-    if start_year < 2024:
-        raise HTTPException(
-            status_code=400,
-            detail="Arizalar faqat 2024 yoki undan keyingi ta'lim yillari uchun qabul qilinadi"
+            status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+            detail="1-kurs bo'lish kerak"
         )
 
     # Prepare file paths
@@ -68,9 +61,11 @@ async def create_application(
 
     # Generate initial application PDF
     generate_application_pdf(filepath=filepath, user=current_user, gpa=user_gpa.gpa)
+    
+    gpa = float(user_gpa.gpa)
 
     # Determine response type and generate appropriate PDF
-    if user_gpa.gpa < 3.5:
+    if gpa < 3.5:
         generated_filename = generate_filename(prefix="rejection", extension="pdf")
         rejection_filepath = os.path.join(upload_dir, generated_filename)
         generate_rejection_pdf(filepath=rejection_filepath, user=current_user, gpa=user_gpa.gpa)
@@ -89,7 +84,7 @@ async def create_application(
         image_path=current_user.image_path,
         group=current_user.group,
         faculty=current_user.faculty,
-        gpa=user_gpa.gpa,
+        gpa=gpa,
         filepath=filepath,
         special_field = special_field,
         reponse_file=response_file_path,
@@ -214,9 +209,12 @@ async def update_pdf(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Avval ariza yaratilmadi"
         )
+        
+        
+
 
     # Fetch GPA data
-    stmt = select(UserGpa).where(UserGpa.user_id == current_user.id)
+    stmt = select(User).where(User.id == current_user.id)
     result = await db.execute(stmt)
     user_gpa = result.scalars().first()
 
@@ -226,21 +224,15 @@ async def update_pdf(
             detail="Foydalanuvchi uchun GPA ma'lumotlari topilmadi"
         )
         
-    try:
-        start_year = int(user_gpa.educationYear.split("-")[0])
-    except (ValueError, AttributeError):
-        raise HTTPException(
-            status_code=400,
-            detail="Ta'lim yili formati noto'g'ri"
-        )
 
-    if start_year < 2024:
+    if not  user_gpa.level == "1-kurs":
         raise HTTPException(
-            status_code=400,
-            detail="Arizalar faqat 2024 yoki undan keyingi ta'lim yillari uchun qabul qilinadi"
+            status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+            detail="1-kurs bo'lish kerak"
         )
-
     # Remove old file if it exists
+    
+    gpa = float(user_gpa.gpa)
     old_path = existing_application.reponse_file
     if not old_path:
         raise HTTPException(
@@ -259,10 +251,10 @@ async def update_pdf(
     base_filepath = os.path.join(upload_dir, base_filename)
 
     # Generate base application PDF
-    generate_application_pdf(filepath=base_filepath, user=current_user, gpa=user_gpa.gpa)
+    generate_application_pdf(filepath=base_filepath, user=current_user, gpa=gpa)
 
     # Decide acceptance/rejection
-    is_rejected = user_gpa.gpa < 3.5
+    is_rejected = gpa < 3.5
     pdf_prefix = "rejection" if is_rejected else "acceptance"
     response_filename = generate_filename(prefix=pdf_prefix, extension="pdf")
     response_filepath = os.path.join(upload_dir, response_filename)

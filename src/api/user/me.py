@@ -41,9 +41,7 @@ async def get_info(
         result = await db.execute(stmt)
         user_subjects = result.scalars().all()
 
-        stmt_gpa = select(UserGpa).where(UserGpa.user_id == user.id)
-        result_gpa = await db.execute(stmt_gpa)
-        user_gpa = result_gpa.scalars().first()
+
 
 
         response_data = {
@@ -69,7 +67,7 @@ async def get_info(
             "birth_date": user.birth_date,
             "specialty": user.specialty,
             "level": user.level,
-            "gpa": user_gpa.gpa,
+            "gpa": user.gpa,
             "subjects": [
                 {
                     "subject": user_subject.subject_name,
