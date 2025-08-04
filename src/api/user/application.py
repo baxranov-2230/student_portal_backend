@@ -68,12 +68,12 @@ async def create_application(
     if gpa < 3.5:
         generated_filename = generate_filename(prefix="rejection", extension="pdf")
         rejection_filepath = os.path.join(upload_dir, generated_filename)
-        generate_rejection_pdf(filepath=rejection_filepath, user=current_user, gpa=user_gpa.gpa)
+        generate_rejection_pdf(filepath=rejection_filepath, user=current_user, gpa=gpa)
         response_file_path = rejection_filepath
     else:
         generated_filename = generate_filename(prefix="acceptance", extension="pdf")
         acceptance_filepath = os.path.join(upload_dir, generated_filename)
-        generate_acceptance_pdf(filepath=acceptance_filepath, user=current_user, gpa=user_gpa.gpa)
+        generate_acceptance_pdf(filepath=acceptance_filepath, user=current_user, gpa=gpa)
         response_file_path = acceptance_filepath
 
     # Create Application entry
