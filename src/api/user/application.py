@@ -51,6 +51,8 @@ async def create_application(
             status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
             detail="1-kurs bo'lish kerak"
         )
+    
+    gpa = float(user_gpa.gpa)
 
     # Prepare file paths
     upload_dir = "uploads/"
@@ -60,9 +62,9 @@ async def create_application(
     filepath = os.path.join(upload_dir, filename)
 
     # Generate initial application PDF
-    generate_application_pdf(filepath=filepath, user=current_user, gpa=user_gpa.gpa)
+    generate_application_pdf(filepath=filepath, user=current_user, gpa=gpa)
     
-    gpa = float(user_gpa.gpa)
+
 
     # Determine response type and generate appropriate PDF
     if gpa < 3.5:
