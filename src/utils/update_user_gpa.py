@@ -1,6 +1,6 @@
 from fastapi import  HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select , update
 
 from src.models.user_gpa import UserGpa
 from src.utils.auth import fetch_user_data
@@ -17,20 +17,19 @@ async def user_gpa_update(token: str, user_id: int , db:AsyncSession):
         raise HTTPException(status_code=400, detail="GPA not found in response")
 
     # Step 3: Fetch existing GPA record
-    stmt = select(UserGpa).where(
-        UserGpa.user_id == user_id,
-        UserGpa.level == "1-kurs"  # fallback to "1-kurs"
+    
+    stmt = (
+        update(UserGpa)
+        .where(
+            UserGpa.user_id == user_id,
+            UserGpa.level == "1-kurs"
+        )
+        .values(gpa=float(avg_gpa))
     )
 
-    result = await db.execute(stmt)
-    user_gpa = result.scalars().first()
-
-    if not user_gpa:
-        raise HTTPException(status_code=404, detail="User GPA record not found")
-
-    # Step 4: Update and commit GPA
-    user_gpa.gpa = float(avg_gpa)
+    await db.execute(stmt)
     await db.commit()
-    await db.refresh(user_gpa)
+    
+
     
  
