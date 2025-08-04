@@ -261,12 +261,13 @@ async def update_pdf(
     generator(filepath=response_filepath, user=current_user)
 
     # Update application record
+    base_filename = f"uploads/{base_filename}"
     stmt_update = (
         update(Application)
         .where(Application.user_id == user_gpa.id)
         .values(
-            filepath=response_filepath,
-            reponse_file=base_filename,
+            filepath=base_filename,
+            reponse_file=response_filepath,
             special_field = special_field
         )
     )
