@@ -4,7 +4,7 @@ import os
 import uuid
 
 
-def generate_application_pdf(filepath, user, gpa):
+def generate_application_pdf(filepath, user):
     """
     Generate grant request PDF using WeasyPrint
     """
@@ -54,7 +54,7 @@ def generate_application_pdf(filepath, user, gpa):
         <div class="title">Ariza</div>
 
         <div class="content" style="text-indent: 40px">
-        Men {user.full_name} {user.faculty} fakultetining {user.level} {user.education_type} {user.group} guruhida tahsil olaman. 2024-2025 o‘quv yili uchun GPA ko‘rsatkichim {gpa}.
+        Men {user.full_name} {user.faculty} fakultetining {user.level} {user.education_type} {user.group} guruhida tahsil olaman. 2024-2025 o‘quv yili uchun GPA ko‘rsatkichim {user.gpa}.
             
             Menga 2025-2026 o‘quv yili uchun Oʻzbekiston Respublikasi Vazirlar Mahkamasining “Oliy taʼlim tashkilotlarida talabalarga grantlarni taqdim etish va qayta taqsimlash tartibi toʻgʻrisidagi nizomni tasdiqlash haqida” 2025-yil 10-martdagi 149-sonli qarori bilan tasdiqlangan Nizomga muvofiq ta’lim grantiga talabgor sifatida ishtirok etishga ruxsat berishingizni so‘rayman.
         </div>
@@ -72,7 +72,7 @@ def generate_application_pdf(filepath, user, gpa):
     HTML(string=html).write_pdf(filepath)
 
 
-def generate_rejection_pdf(filepath, user, gpa):
+def generate_rejection_pdf(filepath, user):
     """
     Generate rejection PDF for GPA < 3.5 using WeasyPrint
     """
@@ -105,7 +105,7 @@ def generate_rejection_pdf(filepath, user, gpa):
         </div>
 
         <div class="content" style="text-indent: 40px">
-            Sizning GPA balingiz {gpa}, ya’ni Vazirlar Mahkamasining 149-sonli qarori bilan
+            Sizning GPA balingiz {user.gpa}, ya’ni Vazirlar Mahkamasining 149-sonli qarori bilan
             tasdiqlangan Nizomning 2-bobi, 13-xat boshida keltirilgan "Ta’lim grantiga
             talabgorlardan joriy o‘quv yilida o‘zlashtirish ko‘rsatkichi bo‘yicha GPA
             ko‘rsatkichi 3.5 va undan yuqori bo‘lishi talab etiladi" degan talablarga ko‘ra,
@@ -124,8 +124,8 @@ def generate_rejection_pdf(filepath, user, gpa):
     HTML(string=html).write_pdf(filepath)
 
 
-def generate_acceptance_pdf(filepath, user, gpa):
-    academic_score = gpa * 16
+def generate_acceptance_pdf(filepath, user):
+    academic_score = (user.gpa) * 16
     current_time = datetime.now().strftime('%Y-%m-%d')
     
     html = f"""
@@ -158,7 +158,7 @@ def generate_acceptance_pdf(filepath, user, gpa):
         </div>
 
         <div class="content" >
-            Sizning GPA balingiz {gpa}. <br/>
+            Sizning GPA balingiz {user.gpa}. <br/>
             Siz Oliy ta’lim tashkilotlarida talabalarga grantlarni taqdim etish va qayta taqsimlash bo‘yicha tanlovda ishtirok etdingiz.<br/>
             Akademik o‘zlashtirish ko‘rsatkichingiz: {academic_score}.
            
