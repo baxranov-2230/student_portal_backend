@@ -29,7 +29,7 @@ async def user_gpa_update(token: str, user_id: int, db: AsyncSession):
     stmt_app = (
         update(Application)
         .where(Application.user_id == user_id)
-        .values(gpa=avg_gpa)
+        .values(gpa=float(avg_gpa))
     )
     await db.execute(stmt_app)
 
