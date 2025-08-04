@@ -7,6 +7,7 @@ from src.models.application import Application
 from src.models.user import User
 from src.utils.auth import RoleChecker
 from src.core.base import get_db
+from sqlalchemy import update
 
 from src.schemas.application import ApplicationCreateResponse 
 import os
@@ -199,9 +200,9 @@ async def get_all_applications(
 async def update_pdf(
     special_field: bool | None = False,
     current_user: User = Depends(RoleChecker("student")),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
-    
+    # Check if application exists
     stmt_app = select(Application).where(Application.user_id == current_user.id)
     result_app = await db.execute(stmt_app)
     existing_application = result_app.scalars().first()
@@ -211,11 +212,8 @@ async def update_pdf(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Avval ariza yaratilmadi"
         )
-        
-        
 
-
-    # Fetch GPA data
+    # Fetch user GPA
     stmt = select(User).where(User.id == current_user.id)
     result = await db.execute(stmt)
     user_gpa = result.scalars().first()
@@ -225,16 +223,14 @@ async def update_pdf(
             status_code=404,
             detail="Foydalanuvchi uchun GPA ma'lumotlari topilmadi"
         )
-        
 
-    if not  user_gpa.level == "1-kurs":
+    if user_gpa.level != "1-kurs":
         raise HTTPException(
             status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
             detail="1-kurs bo'lish kerak"
         )
+
     # Remove old file if it exists
-    
-    gpa = float(user_gpa.gpa)
     old_path = existing_application.reponse_file
     if not old_path:
         raise HTTPException(
@@ -244,7 +240,7 @@ async def update_pdf(
     if os.path.exists(old_path):
         os.remove(old_path)
 
-    # Prepare upload directory and filenames
+    # Generate new application PDF
     upload_dir = "uploads/"
     os.makedirs(upload_dir, exist_ok=True)
 
@@ -252,23 +248,29 @@ async def update_pdf(
     base_filename = f"user_{current_user.full_name.replace(' ', '_')}_{timestamp}.pdf"
     base_filepath = os.path.join(upload_dir, base_filename)
 
-    # Generate base application PDF
     generate_application_pdf(filepath=base_filepath, user=current_user)
 
-    # Decide acceptance/rejection
+    # Generate response (acceptance/rejection)
+    gpa = float(user_gpa.gpa)
     is_rejected = gpa < 3.5
     pdf_prefix = "rejection" if is_rejected else "acceptance"
     response_filename = generate_filename(prefix=pdf_prefix, extension="pdf")
     response_filepath = os.path.join(upload_dir, response_filename)
 
-    # Generate response-specific PDF
     generator = generate_rejection_pdf if is_rejected else generate_acceptance_pdf
     generator(filepath=response_filepath, user=current_user)
 
-    # Update and persist
-    existing_application.filepath = response_filepath
-    existing_application.special_field = special_field
-    
+    # Update application record
+    stmt_update = (
+        update(Application)
+        .where(Application.user_id == user_gpa.id)
+        .values(
+            filepath=base_filename,
+            reponse_file=response_filepath,
+            special_field = special_field
+        )
+    )
+    await db.execute(stmt_update)
     await db.commit()
-    await db.refresh(existing_application)
-    return {"message": "Regenerate succefully"}
+
+    return {"message": "PDF successfully regenerated"}
