@@ -16,6 +16,7 @@ class ApplicationCreateResponse(BaseModel):
     create_date: datetime
     # grade: int
     reponse_file: Optional[str] = None
+    special_field: bool
 
 
 
@@ -36,3 +37,4 @@ class ApplicationResponse(BaseModel):
     filepath: Optional[str] = None
     create_date: datetime
     reponse_file: Optional[str] = None
+    special_field: bool

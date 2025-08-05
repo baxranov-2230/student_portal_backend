@@ -20,6 +20,7 @@ async def create(
         title: str,
         file: UploadFile = File(...),
         token: str = Depends(oauth2_scheme),
+        special_field : bool | None = False,
         db: AsyncSession = Depends(get_db),
 ):
     user_data = await get_user_from_token(db=db, token=token)

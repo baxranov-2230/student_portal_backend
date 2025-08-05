@@ -9,9 +9,12 @@ class AchievementBase(BaseModel):
     title: str
     file_path: str
 
+    
+
 
 class AchievementResposne(AchievementBase):
     id: int
+
 
     model_config = ConfigDict(from_attributes=True)
 
