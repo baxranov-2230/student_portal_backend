@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query 
+from fastapi import APIRouter, Depends, HTTPException, status, Query  , BackgroundTasks
 from fastapi.responses import StreamingResponse
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -304,7 +304,10 @@ async def user_grade(
 
 @application_router.post("/rewrite")
 async def overwrite(
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(RoleChecker("admin")),
     db: AsyncSession = Depends(get_db)
 ):
-    return await get_all_students(db=db)
+    background_tasks.add_task(get_all_students, db)
+    return {"message": "Background task started to update student data."}
+
