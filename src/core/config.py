@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     HEMIS_USER_GPA : str
     HEMIS_USER_SUBJECT: str
     # HEMIS_USER_ATTENDANCE: str
+    
+    ADMIN_KEY: str
 
     @property
     def connection_string(self):

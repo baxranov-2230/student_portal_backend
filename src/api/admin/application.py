@@ -16,6 +16,7 @@ from fastapi.responses import FileResponse
 import os
 from io import BytesIO
 from openpyxl import Workbook
+from src.utils.rewrite import get_all_students
 
 
 
@@ -299,3 +300,11 @@ async def user_grade(
     await db.refresh(application_data)
 
     return application_data
+
+
+@application_router.post("/rewrite")
+async def overwrite(
+    current_user: User = Depends(RoleChecker("admin")),
+    db: AsyncSession = Depends(get_db)
+):
+    return await get_all_students(db=db)
