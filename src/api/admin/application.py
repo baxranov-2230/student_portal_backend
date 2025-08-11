@@ -248,7 +248,8 @@ async def download_user_info(
         "GPA",
         "Student ID Number",
         "Education Type",
-        "Date"
+        "Date",
+        "Special Field"
     ])
 
     # Write data rows
@@ -263,7 +264,8 @@ async def download_user_info(
                 user.gpa,
                 user.student_id_number,
                 user.education_type,
-                app.create_date  
+                app.create_date,
+                app.special_field  
             ])
 
     # Save to memory
